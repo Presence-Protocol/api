@@ -1,0 +1,18 @@
+services:
+  api:
+    build: .
+    restart: "always"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./server/models/database.sqlite:/opt/app/server/models/database.sqlite
+    command: "yarn run api"
+
+  event-fetcher:
+    build: .
+    restart: "always"
+    environment:
+      - NETWORK='testnet'
+    volumes:
+      - ./server/models/database.sqlite:/opt/app/server/models/database.sqlite
+    command: "yarn run eventFetcher"
