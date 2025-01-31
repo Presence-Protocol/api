@@ -7,7 +7,7 @@ import { loadDeployments } from '../artifacts/ts/deployments'
 import { Collection, Poap, EventStat } from './models';
 
 
-const deployment = loadDeployments(process.env.NETWORK as NetworkId); // TODO use getNetwork()
+const deployment = loadDeployments(process.env.NETWORK as NetworkId ?? 'testnet'); // TODO use getNetwork()
 const factoryContract = PoapFactory.at(deployment.contracts.PoapFactory.contractInstance.address);
 
 web3.setCurrentNodeProvider(
