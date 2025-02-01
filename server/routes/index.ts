@@ -3,15 +3,6 @@ import { Collection, Poap } from '../models';
 
 const router = express.Router();
 
-router.post('/examples', async (req, res) => {
-  try {
-    const example = await Collection.create(req.body);
-    res.status(201).json(example);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
 router.get('/examples', async (req, res) => {
   try {
     const examples = await Collection.findAll();
@@ -23,7 +14,7 @@ router.get('/examples', async (req, res) => {
 
 router.get('/poap/:address', async (req, res) => {
   try {
-    const poaoMinterByUser = await Poap.findAll({where: {caller: req.params.address} })
+    const poaoMinterByUser = await Poap.findAll({where: {caller: req.params.address}, order: [ ['createdAt', 'DESC']] })
     console.log(req.params)
     if (poaoMinterByUser) {
       res.json(poaoMinterByUser);
