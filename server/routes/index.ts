@@ -12,6 +12,15 @@ router.get('/examples', async (req, res) => {
   }
 });
 
+router.get('/events', async (req, res) => {
+  try {
+    const events = await Collection.findAll({order: [ ['createdAt', 'DESC']], limit: parseInt(req.query.limit as string) || 10 });
+    res.json(events);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/poap/:address', async (req, res) => {
   try {
     const poaoMinterByUser = await Poap.findAll({where: {caller: req.params.address}, order: [ ['createdAt', 'DESC']] })
