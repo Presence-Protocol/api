@@ -82,25 +82,36 @@ export async function eventsFetcher() {
     }
   }
 
-  factoryContract.subscribeAllEvents({
-    pollingInterval: 5000,
-    messageCallback: async (event) => {
-      eventQueue.push(event);
-      if(event.name === "PoapMinted") {
-        const testevent = event as PoapFactoryTypes.PoapMintedEvent;
-        console.log(`PoapMinted: ${testevent.fields.contractId} ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.caller}`);
+  let subscription: Subscription | null = null;
+
+  function startListener(fromCounter: number) {
+    subscription = factoryContract.subscribeAllEvents({
+      pollingInterval: 5000,
+      messageCallback: async (event) => {
+        eventQueue.push(event);
+        if(event.name === "PoapMinted") {
+          const testevent = event as PoapFactoryTypes.PoapMintedEvent;
+          console.log(`PoapMinted: ${testevent.fields.contractId} ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.caller}`);
+        }
+        if (eventQueue.length >= BATCH_SIZE) {
+          await processBatch([...eventQueue], batchId++);
+          eventQueue = [];
+        }
+      },
+      errorCallback: async (error, subscription) => {
+        console.error(`Error from contract factory:`, error);
+        
+        // Unsubscribe and restart after a delay
+        subscription.unsubscribe();
+        console.log('Restarting listener in 10 seconds...');
+        setTimeout(() => {
+          startListener(startCounter);
+        }, 10000);
       }
-      if (eventQueue.length >= BATCH_SIZE) {
-        await processBatch([...eventQueue], batchId++);
-        eventQueue = [];
-      }
-    },
-    errorCallback: (error, subscription) => {
-      console.error(`Error from contract factory:`, error);
-      subscription.unsubscribe();
-      return Promise.resolve();
-    }
-  }, startCounter );
+    }, fromCounter);
+  }
+
+  startListener(startCounter);
 
   
   await EventStat.upsert(
