@@ -82,7 +82,7 @@ export async function eventsFetcher() {
     }
   }
 
-  let subscription: Subscription | null = null;
+  let subscription: Subscription<any> | null = null;
 
   function startListener(fromCounter: number) {
     subscription = factoryContract.subscribeAllEvents({
