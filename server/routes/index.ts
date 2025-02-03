@@ -23,7 +23,7 @@ router.get('/events', async (req, res) => {
 
 router.get('/poap/:address', async (req, res) => {
   try {
-    const poaoMinterByUser = await Poap.findAll({where: {caller: req.params.address}, order: [ ['createdAt', 'DESC']] })
+    const poaoMinterByUser = await Poap.findAll({where: {caller: req.params.address}, order: [ ['createdAt', 'DESC']], limit: parseInt(req.query.limit as string) || 20  })
     console.log(req.params)
     if (poaoMinterByUser) {
       res.json(poaoMinterByUser);
