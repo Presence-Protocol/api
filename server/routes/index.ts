@@ -25,7 +25,7 @@ router.get('/events/minted/:collectionid', async (req, res) => {
 
 router.get('/events', async (req, res) => {
   try {
-    const events = await Collection.findAll({order: [ ['createdAt', 'DESC']], limit: parseInt(req.query.limit as string) || 10 });
+    const events = await Collection.findAll({where: {isPublic: true},order: [ ['createdAt', 'DESC']], limit: parseInt(req.query.limit as string) || 10 });
     res.json(events);
   } catch (error: any) {
     res.status(500).json({ error: error.message });

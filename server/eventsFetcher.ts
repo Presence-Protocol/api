@@ -50,7 +50,8 @@ export async function eventsFetcher() {
             contractId: event.fields.contractId,
             collectionContractId: event.fields.collectionId,
             nftIndex: Number(event.fields.nftIndex),
-            caller: event.fields.caller
+            caller: event.fields.caller,
+            isPublic: event.fields.isPublic
           })), 
           { 
             transaction: t,
@@ -63,7 +64,8 @@ export async function eventsFetcher() {
           collectionEvents.map(event => ({
             contractId: event.fields.contractId,
             eventName: hexToString(event.fields.eventName),
-            caller: event.fields.organizer
+            caller: event.fields.organizer,
+            isPublic: event.fields.isPublic
           })),
           {
             transaction: t,

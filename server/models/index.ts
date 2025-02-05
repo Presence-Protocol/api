@@ -22,26 +22,33 @@ interface CollectionAttributes {
   contractId: string;
   eventName: string;
   caller: string
+  isPublic: boolean
 }
 
 class Collection extends Model<CollectionAttributes> implements CollectionAttributes {
     public contractId!: string;
     public eventName!: string;
-    public caller!: string
+    public caller!: string;
+    public isPublic!: boolean;
+    
 }
 
 interface PoapAttributes {
     contractId: string;
     collectionContractId: string;
     nftIndex: number;
-    caller: string
+    caller: string;
+    isPublic: boolean;
+
   }
   
   class Poap extends Model<PoapAttributes> implements PoapAttributes {
     public contractId!: string;
     public collectionContractId!: string;
     public nftIndex!: number;
-    public caller!: string
+    public caller!: string;
+    public isPublic!: boolean;
+
   }
 
 Collection.init({
@@ -60,6 +67,10 @@ Collection.init({
   },
   caller: {
     type: DataTypes.STRING,
+    allowNull: false
+  },
+  isPublic: {
+    type: DataTypes.BOOLEAN,
     allowNull: false
   }
 }, {
@@ -87,6 +98,10 @@ Poap.init({
     },
     caller: {
       type: DataTypes.STRING,
+      allowNull: false
+    },
+    isPublic: {
+      type: DataTypes.BOOLEAN,
       allowNull: false
     }
   }, {
