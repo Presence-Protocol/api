@@ -1,8 +1,8 @@
 {
   "version": "v3.11.2",
   "name": "PoapFactory",
-  "bytecode": "03044062409640a4415101030d1101402fd39e0926dab4170dce011600160116021603160416051606160d470003160716081609160a160b1406414c50480002130f64160c130164170f170e160dd1a2ce00160e160faf1710a0000d2aa1000516101605160d160a6116100201030104001bd3f652052cb417011601d1a216010d0d1600010417020c0d1600010117030616021600160316010c0d1600010673010000000103d3c2aa9c01a00002000001160140581401301401311401321401331401341401351401361401371401381401391401611401621401631401641401651401661710170f170e170d170c170b170a170917081707170617051704170317021701140017110c17121612160043314c402d1600161216120d2a626c1340ff3817131613103c130f3817141613130f381715161116147a1310314d0d2a784416157a1310314d0d2a7844171116120d2a17124a7fce161102",
-  "codeHash": "5f7d894a47ccf9ee047b8de87d3edb3d314778b30e7a43b3cf0c276b4f653be2",
+  "bytecode": "0303407c40d640e40103111601403ed3ccd72652b41711ce0116001601160216031604160516061607160816111609160a160b160c160d1406414c50480002131164160e160f161013036417131712d11714160e0c334c07160ed13413097b160e171416111614a2ce0016121613af1715a0000d2aa10005161516071611160c6116150201030108004032d3f652052cb417010c0d160001071702d117031602d1334c020c17030c0e160001091705170416017a1603a216051604a316010d0d1600010417060c0d1600010117070616061600160716010c0d1600010673010000000103d3c2aa9c01a00002",
+  "codeHash": "81d0dd4f9bf0f2857f662b1de585b6680992ffd39a11fc9a1006518f4f44d3dd",
   "fieldsSig": {
     "names": [
       "collectionTemplateId",
@@ -62,6 +62,8 @@
         "mintStartAt",
         "mintEndAt",
         "oneMintPerAddress",
+        "poapPrice",
+        "tokenIdPoap",
         "eventImage",
         "eventName",
         "description",
@@ -70,6 +72,8 @@
         "eventEndAt",
         "isPublic",
         "isBurnable",
+        "amountForStorageFees",
+        "amountPoapFees",
         "totalSupply"
       ],
       "paramTypes": [
@@ -77,6 +81,8 @@
         "U256",
         "U256",
         "Bool",
+        "U256",
+        "ByteVec",
         "ByteVec",
         "ByteVec",
         "ByteVec",
@@ -85,9 +91,15 @@
         "U256",
         "Bool",
         "Bool",
+        "U256",
+        "U256",
         "U256"
       ],
       "paramIsMutable": [
+        false,
+        false,
+        false,
+        false,
         false,
         false,
         false,
@@ -126,21 +138,6 @@
       "paramIsMutable": [],
       "returnTypes": [
         "U256"
-      ]
-    },
-    {
-      "name": "convert",
-      "paramNames": [
-        "array"
-      ],
-      "paramTypes": [
-        "ByteVec"
-      ],
-      "paramIsMutable": [
-        false
-      ],
-      "returnTypes": [
-        "ByteVec"
       ]
     }
   ],
