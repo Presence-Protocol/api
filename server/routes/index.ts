@@ -1,5 +1,5 @@
 import express from 'express';
-import { Collection, Poap } from '../models';
+import { Collection, Poap, sequelize } from '../models';
 
 const router = express.Router();
 
@@ -55,6 +55,65 @@ router.get('/events/:address', async (req, res) => {
     } else {
       res.status(404).json({ error: 'Not found' });
     }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/events/stats/totaladdresses', async (req, res) => {
+  try {
+    const eventCounts = await Collection.findAll({
+      attributes: [
+        'caller',
+        [sequelize.fn('COUNT', sequelize.col('*')), 'eventCount']
+      ],
+      group: ['caller'],
+      order: [[sequelize.fn('COUNT', sequelize.col('*')), 'DESC']],
+      limit: parseInt(req.query.limit as string) || 20
+    });
+
+    if (eventCounts) {
+      res.json(eventCounts);
+    } else {
+      res.status(404).json({ error: 'Not found' });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+router.get('/poap/stats/totaladdresses', async (req, res) => {
+  try {
+    const eventCounts = await Poap.findAll({
+      attributes: [
+        'caller',
+        [sequelize.fn('COUNT', sequelize.col('*')), 'eventCount']
+      ],
+      group: ['caller'],
+      order: [[sequelize.fn('COUNT', sequelize.col('*')), 'DESC']],
+      limit: parseInt(req.query.limit as string) || 20
+    });
+
+    if (eventCounts) {
+      res.json(eventCounts);
+    } else {
+      res.status(404).json({ error: 'Not found' });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/stats/total', async (req, res) => {
+  try {
+    const totalCollections = await Collection.count();
+    const totalPoaps = await Poap.count();
+    
+    res.json({
+      totalCollections,
+      totalPoaps
+    });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
