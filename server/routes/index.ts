@@ -48,7 +48,7 @@ router.get('/poap/:address', async (req, res) => {
           'caller',
           'isPublic',
           'createdAt',
-          'updatedAt'
+          [sequelize.fn('COUNT', sequelize.col('collectionContractId')), 'count']
         ],
         group: ['collectionContractId'],
         order: [['createdAt', 'DESC']]
