@@ -34,13 +34,33 @@ router.get('/events', async (req, res) => {
 
 router.get('/poap/:address', async (req, res) => {
   try {
-    const poaoMinterByUser = await Poap.findAll({where: {caller: req.params.address}, order: [ ['createdAt', 'DESC']], limit: parseInt(req.query.limit as string) || 20  })
-    console.log(req.params)
-    if (poaoMinterByUser) {
-      res.json(poaoMinterByUser);
+    const { address } = req.params;
+    const { unique } = req.query;
+
+    let poaps;
+    if (unique === 'true') {
+      poaps = await Poap.findAll({
+        where: { caller: address },
+        attributes: [
+          [sequelize.fn('DISTINCT', sequelize.col('collectionContractId')), 'collectionContractId'],
+          'contractId',
+          'nftIndex',
+          'caller',
+          'isPublic',
+          'createdAt',
+          'updatedAt'
+        ],
+        group: ['collectionContractId'],
+        order: [['createdAt', 'DESC']]
+      });
     } else {
-      res.status(404).json({ error: 'Not found' });
+      poaps = await Poap.findAll({
+        where: { caller: address },
+        order: [['createdAt', 'DESC']]
+      });
     }
+
+    res.json(poaps);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
