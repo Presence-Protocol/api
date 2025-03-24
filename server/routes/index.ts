@@ -14,6 +14,33 @@ router.get('/events/minted/:collectionid', async (req, res) => {
   }
 });
 
+
+router.get('/events/minted-list/:collectionid', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit as string) || 100;
+    const offset = parseInt(req.query.offset as string) || 0;
+    
+    const { count, rows: events } = await Poap.findAndCountAll({
+      where: { collectionContractId: req.params.collectionid },
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset
+    });
+
+    res.json({
+      events,
+      pagination: {
+        total: count,
+        limit,
+        offset,
+        hasMore: offset + limit < count
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/events', async (req, res) => {
   try {
     const events = await Collection.findAll({where: {isPublic: true},order: [ ['createdAt', 'DESC']], limit: parseInt(req.query.limit as string) || 10 });
