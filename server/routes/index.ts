@@ -3,15 +3,6 @@ import { Collection, Poap, sequelize } from '../models';
 
 const router = express.Router();
 
-router.get('/examples', async (req, res) => {
-  try {
-    const examples = await Collection.findAll();
-    res.json(examples);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 router.get('/events/minted/:collectionid', async (req, res) => {
   try {
     console.log(req.params)
