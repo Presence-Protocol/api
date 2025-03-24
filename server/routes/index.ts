@@ -29,7 +29,7 @@ router.get('/events/minted-list/:collectionid', async (req, res) => {
     });
 
     res.json({
-      events,
+      addresses: events.map(event => event.caller),
       pagination: {
         total: count,
         limit,
