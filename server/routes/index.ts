@@ -17,11 +17,12 @@ router.get('/events/minted/:collectionid', async (req, res) => {
 
 router.get('/events/minted-list/:collectionid', async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit as string) || 100;
+    const limit = parseInt(req.query.limit as string) || 1000;
     const offset = parseInt(req.query.offset as string) || 0;
     
     const { count, rows: events } = await Poap.findAndCountAll({
       where: { collectionContractId: req.params.collectionid },
+      attributes: ['caller'],
       order: [['createdAt', 'DESC']],
       limit,
       offset
