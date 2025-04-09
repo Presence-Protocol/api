@@ -23,6 +23,7 @@ interface CollectionAttributes {
   eventName: string;
   caller: string
   isPublic: boolean
+  disabled: boolean;
 }
 
 class Collection extends Model<CollectionAttributes> implements CollectionAttributes {
@@ -30,6 +31,7 @@ class Collection extends Model<CollectionAttributes> implements CollectionAttrib
     public eventName!: string;
     public caller!: string;
     public isPublic!: boolean;
+    public disabled!: boolean;
     
 }
 
@@ -39,7 +41,6 @@ interface PoapAttributes {
     nftIndex: number;
     caller: string;
     isPublic: boolean;
-
   }
   
   class Poap extends Model<PoapAttributes> implements PoapAttributes {
@@ -48,7 +49,6 @@ interface PoapAttributes {
     public nftIndex!: number;
     public caller!: string;
     public isPublic!: boolean;
-
   }
 
 Collection.init({
@@ -72,6 +72,11 @@ Collection.init({
   isPublic: {
     type: DataTypes.BOOLEAN,
     allowNull: false
+  },
+  disabled: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
   }
 }, {
   sequelize,

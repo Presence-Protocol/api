@@ -65,7 +65,8 @@ export async function eventsFetcher() {
             contractId: event.fields.contractId,
             eventName: hexToString(event.fields.eventName),
             caller: event.fields.organizer,
-            isPublic: event.fields.isPublic
+            isPublic: event.fields.isPublic,
+            disabled: event.fields.disabled
           })),
           {
             transaction: t,
