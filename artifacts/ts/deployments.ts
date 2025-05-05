@@ -14,6 +14,12 @@ import {
   PoapCollectionInstance,
   PoapFactory,
   PoapFactoryInstance,
+  PoapNFTV2,
+  PoapNFTV2Instance,
+  PoapCollectionV2,
+  PoapCollectionV2Instance,
+  PoapFactoryV2,
+  PoapFactoryV2Instance,
 } from ".";
 import { default as mainnetDeployments } from "../../deployments/.deployments.mainnet.json";
 import { default as testnetDeployments } from "../../deployments/.deployments.testnet.json";
@@ -25,6 +31,9 @@ export type Deployments = {
     PoapNFT: DeployContractExecutionResult<PoapNFTInstance>;
     PoapCollection: DeployContractExecutionResult<PoapCollectionInstance>;
     PoapFactory: DeployContractExecutionResult<PoapFactoryInstance>;
+    PoapNFTV2?: DeployContractExecutionResult<PoapNFTV2Instance>;
+    PoapCollectionV2?: DeployContractExecutionResult<PoapCollectionV2Instance>;
+    PoapFactoryV2?: DeployContractExecutionResult<PoapFactoryV2Instance>;
   };
 };
 
@@ -48,6 +57,33 @@ function toDeployments(json: any): Deployments {
         json.contracts["PoapFactory"].contractInstance.address
       ),
     },
+    PoapNFTV2:
+      json.contracts["PoapNFTV2"] === undefined
+        ? undefined
+        : {
+            ...json.contracts["PoapNFTV2"],
+            contractInstance: PoapNFTV2.at(
+              json.contracts["PoapNFTV2"].contractInstance.address
+            ),
+          },
+    PoapCollectionV2:
+      json.contracts["PoapCollectionV2"] === undefined
+        ? undefined
+        : {
+            ...json.contracts["PoapCollectionV2"],
+            contractInstance: PoapCollectionV2.at(
+              json.contracts["PoapCollectionV2"].contractInstance.address
+            ),
+          },
+    PoapFactoryV2:
+      json.contracts["PoapFactoryV2"] === undefined
+        ? undefined
+        : {
+            ...json.contracts["PoapFactoryV2"],
+            contractInstance: PoapFactoryV2.at(
+              json.contracts["PoapFactoryV2"].contractInstance.address
+            ),
+          },
   };
   return {
     ...json,

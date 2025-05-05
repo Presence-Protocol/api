@@ -8,6 +8,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loadDeployments = loadDeployments;
 const _1 = require(".");
+const _deployments_mainnet_json_1 = __importDefault(require("../../deployments/.deployments.mainnet.json"));
 const _deployments_testnet_json_1 = __importDefault(require("../../deployments/.deployments.testnet.json"));
 const _deployments_devnet_json_1 = __importDefault(require("../../deployments/.deployments.devnet.json"));
 function toDeployments(json) {
@@ -24,6 +25,24 @@ function toDeployments(json) {
             ...json.contracts["PoapFactory"],
             contractInstance: _1.PoapFactory.at(json.contracts["PoapFactory"].contractInstance.address),
         },
+        PoapNFTV2: json.contracts["PoapNFTV2"] === undefined
+            ? undefined
+            : {
+                ...json.contracts["PoapNFTV2"],
+                contractInstance: _1.PoapNFTV2.at(json.contracts["PoapNFTV2"].contractInstance.address),
+            },
+        PoapCollectionV2: json.contracts["PoapCollectionV2"] === undefined
+            ? undefined
+            : {
+                ...json.contracts["PoapCollectionV2"],
+                contractInstance: _1.PoapCollectionV2.at(json.contracts["PoapCollectionV2"].contractInstance.address),
+            },
+        PoapFactoryV2: json.contracts["PoapFactoryV2"] === undefined
+            ? undefined
+            : {
+                ...json.contracts["PoapFactoryV2"],
+                contractInstance: _1.PoapFactoryV2.at(json.contracts["PoapFactoryV2"].contractInstance.address),
+            },
     };
     return {
         ...json,
@@ -31,11 +50,13 @@ function toDeployments(json) {
     };
 }
 function loadDeployments(networkId, deployerAddress) {
-    const deployments = networkId === "testnet"
-        ? _deployments_testnet_json_1.default
-        : networkId === "devnet"
-            ? _deployments_devnet_json_1.default
-            : undefined;
+    const deployments = networkId === "mainnet"
+        ? _deployments_mainnet_json_1.default
+        : networkId === "testnet"
+            ? _deployments_testnet_json_1.default
+            : networkId === "devnet"
+                ? _deployments_devnet_json_1.default
+                : undefined;
     if (deployments === undefined) {
         throw Error("The contract has not been deployed to the " + networkId);
     }

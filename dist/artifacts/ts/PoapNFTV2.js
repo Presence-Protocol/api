@@ -6,9 +6,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PoapNFTInstance = exports.PoapNFT = void 0;
+exports.PoapNFTV2Instance = exports.PoapNFTV2 = void 0;
 const web3_1 = require("@alephium/web3");
-const PoapNFT_ral_json_1 = __importDefault(require("../PoapNFT.ral.json"));
+const PoapNFTV2_ral_json_1 = __importDefault(require("../V2/PoapNFTV2.ral.json"));
 const contracts_1 = require("./contracts");
 const types_1 = require("./types");
 class Factory extends web3_1.ContractFactory {
@@ -54,113 +54,122 @@ class Factory extends web3_1.ContractFactory {
             setParticipated: async (params) => {
                 return (0, web3_1.testMethod)(this, "setParticipated", params, contracts_1.getContractByCodeHash);
             },
+            lock: async (params) => {
+                return (0, web3_1.testMethod)(this, "lock", params, contracts_1.getContractByCodeHash);
+            },
         };
     }
     encodeFields(fields) {
         return (0, web3_1.encodeContractFields)((0, web3_1.addStdIdToFields)(this.contract, fields), this.contract.fieldsSig, types_1.AllStructs);
     }
     at(address) {
-        return new PoapNFTInstance(address);
+        return new PoapNFTV2Instance(address);
     }
     stateForTest(initFields, asset, address) {
         return this.stateForTest_(initFields, asset, address, undefined);
     }
 }
 // Use this object to test and deploy the contract
-exports.PoapNFT = new Factory(web3_1.Contract.fromJson(PoapNFT_ral_json_1.default, "", "c741e48f100b220e90d7e6e79c1f9b435351316a70a257d369d98ed713637049", types_1.AllStructs));
-(0, contracts_1.registerContract)(exports.PoapNFT);
+exports.PoapNFTV2 = new Factory(web3_1.Contract.fromJson(PoapNFTV2_ral_json_1.default, "", "5eafdf51e14a05eb56f826a111b5cbd4e4cf3ffec834b8c5d3ce813dd7b9b9f0", types_1.AllStructs));
+(0, contracts_1.registerContract)(exports.PoapNFTV2);
 // Use this class to interact with the blockchain
-class PoapNFTInstance extends web3_1.ContractInstance {
+class PoapNFTV2Instance extends web3_1.ContractInstance {
     constructor(address) {
         super(address);
         this.view = {
             getTokenUri: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapNFT, this, "getTokenUri", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapNFTV2, this, "getTokenUri", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             getCollectionIndex: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapNFT, this, "getCollectionIndex", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapNFTV2, this, "getCollectionIndex", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             getNFTIndex: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapNFT, this, "getNFTIndex", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapNFTV2, this, "getNFTIndex", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             getName: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapNFT, this, "getName", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapNFTV2, this, "getName", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             getDescription: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapNFT, this, "getDescription", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapNFTV2, this, "getDescription", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             getImage: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapNFT, this, "getImage", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapNFTV2, this, "getImage", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             getTraits: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapNFT, this, "getTraits", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapNFTV2, this, "getTraits", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             getTraitCount: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapNFT, this, "getTraitCount", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapNFTV2, this, "getTraitCount", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             getTraitAtIndex: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapNFT, this, "getTraitAtIndex", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapNFTV2, this, "getTraitAtIndex", params, contracts_1.getContractByCodeHash);
             },
             getHasParticipated: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapNFT, this, "getHasParticipated", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapNFTV2, this, "getHasParticipated", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             getMinter: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapNFT, this, "getMinter", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapNFTV2, this, "getMinter", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             burn: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapNFT, this, "burn", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapNFTV2, this, "burn", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             setParticipated: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapNFT, this, "setParticipated", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapNFTV2, this, "setParticipated", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+            },
+            lock: async (params) => {
+                return (0, web3_1.callMethod)(exports.PoapNFTV2, this, "lock", params, contracts_1.getContractByCodeHash);
             },
         };
         this.transact = {
             getTokenUri: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapNFT, this, "getTokenUri", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapNFTV2, this, "getTokenUri", params);
             },
             getCollectionIndex: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapNFT, this, "getCollectionIndex", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapNFTV2, this, "getCollectionIndex", params);
             },
             getNFTIndex: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapNFT, this, "getNFTIndex", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapNFTV2, this, "getNFTIndex", params);
             },
             getName: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapNFT, this, "getName", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapNFTV2, this, "getName", params);
             },
             getDescription: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapNFT, this, "getDescription", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapNFTV2, this, "getDescription", params);
             },
             getImage: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapNFT, this, "getImage", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapNFTV2, this, "getImage", params);
             },
             getTraits: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapNFT, this, "getTraits", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapNFTV2, this, "getTraits", params);
             },
             getTraitCount: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapNFT, this, "getTraitCount", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapNFTV2, this, "getTraitCount", params);
             },
             getTraitAtIndex: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapNFT, this, "getTraitAtIndex", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapNFTV2, this, "getTraitAtIndex", params);
             },
             getHasParticipated: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapNFT, this, "getHasParticipated", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapNFTV2, this, "getHasParticipated", params);
             },
             getMinter: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapNFT, this, "getMinter", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapNFTV2, this, "getMinter", params);
             },
             burn: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapNFT, this, "burn", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapNFTV2, this, "burn", params);
             },
             setParticipated: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapNFT, this, "setParticipated", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapNFTV2, this, "setParticipated", params);
+            },
+            lock: async (params) => {
+                return (0, web3_1.signExecuteMethod)(exports.PoapNFTV2, this, "lock", params);
             },
         };
     }
     async fetchState() {
-        return (0, web3_1.fetchContractState)(exports.PoapNFT, this);
+        return (0, web3_1.fetchContractState)(exports.PoapNFTV2, this);
     }
     async multicall(callss) {
-        return await (0, web3_1.multicallMethods)(exports.PoapNFT, this, callss, contracts_1.getContractByCodeHash);
+        return await (0, web3_1.multicallMethods)(exports.PoapNFTV2, this, callss, contracts_1.getContractByCodeHash);
     }
 }
-exports.PoapNFTInstance = PoapNFTInstance;
+exports.PoapNFTV2Instance = PoapNFTV2Instance;

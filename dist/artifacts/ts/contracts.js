@@ -3,9 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getAllContracts = getAllContracts;
 exports.registerContract = registerContract;
 exports.getContractByCodeHash = getContractByCodeHash;
 let contracts = undefined;
+function getAllContracts() {
+    return contracts ?? [];
+}
 function registerContract(factory) {
     if (contracts === undefined) {
         contracts = [factory];

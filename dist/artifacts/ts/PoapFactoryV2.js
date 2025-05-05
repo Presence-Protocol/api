@@ -6,9 +6,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PoapFactoryInstance = exports.PoapFactory = void 0;
+exports.PoapFactoryV2Instance = exports.PoapFactoryV2 = void 0;
 const web3_1 = require("@alephium/web3");
-const PoapFactory_ral_json_1 = __importDefault(require("../PoapFactory.ral.json"));
+const PoapFactoryV2_ral_json_1 = __importDefault(require("../V2/PoapFactoryV2.ral.json"));
 const contracts_1 = require("./contracts");
 const types_1 = require("./types");
 class Factory extends web3_1.ContractFactory {
@@ -34,68 +34,68 @@ class Factory extends web3_1.ContractFactory {
         return (0, web3_1.encodeContractFields)((0, web3_1.addStdIdToFields)(this.contract, fields), this.contract.fieldsSig, types_1.AllStructs);
     }
     at(address) {
-        return new PoapFactoryInstance(address);
+        return new PoapFactoryV2Instance(address);
     }
     stateForTest(initFields, asset, address) {
         return this.stateForTest_(initFields, asset, address, undefined);
     }
 }
 // Use this object to test and deploy the contract
-exports.PoapFactory = new Factory(web3_1.Contract.fromJson(PoapFactory_ral_json_1.default, "", "d8a33daa9e49797cf7649f4c78d877fb453aff6bdddccce32ef80245e77d58bb", types_1.AllStructs));
-(0, contracts_1.registerContract)(exports.PoapFactory);
+exports.PoapFactoryV2 = new Factory(web3_1.Contract.fromJson(PoapFactoryV2_ral_json_1.default, "", "95938fb7a773234e100a7a9aae9348de099c3f87148afa7a1037186db53750bb", types_1.AllStructs));
+(0, contracts_1.registerContract)(exports.PoapFactoryV2);
 // Use this class to interact with the blockchain
-class PoapFactoryInstance extends web3_1.ContractInstance {
+class PoapFactoryV2Instance extends web3_1.ContractInstance {
     constructor(address) {
         super(address);
         this.view = {
             mintNewCollection: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapFactory, this, "mintNewCollection", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapFactoryV2, this, "mintNewCollection", params, contracts_1.getContractByCodeHash);
             },
             mintPoap: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapFactory, this, "mintPoap", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapFactoryV2, this, "mintPoap", params, contracts_1.getContractByCodeHash);
             },
             setParticipatedPresence: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapFactory, this, "setParticipatedPresence", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapFactoryV2, this, "setParticipatedPresence", params, contracts_1.getContractByCodeHash);
             },
             getNumEventsCreated: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapFactory, this, "getNumEventsCreated", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapFactoryV2, this, "getNumEventsCreated", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
         };
         this.transact = {
             mintNewCollection: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapFactory, this, "mintNewCollection", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapFactoryV2, this, "mintNewCollection", params);
             },
             mintPoap: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapFactory, this, "mintPoap", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapFactoryV2, this, "mintPoap", params);
             },
             setParticipatedPresence: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapFactory, this, "setParticipatedPresence", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapFactoryV2, this, "setParticipatedPresence", params);
             },
             getNumEventsCreated: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapFactory, this, "getNumEventsCreated", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapFactoryV2, this, "getNumEventsCreated", params);
             },
         };
     }
     async fetchState() {
-        return (0, web3_1.fetchContractState)(exports.PoapFactory, this);
+        return (0, web3_1.fetchContractState)(exports.PoapFactoryV2, this);
     }
     async getContractEventsCurrentCount() {
         return (0, web3_1.getContractEventsCurrentCount)(this.address);
     }
     subscribeEventCreatedEvent(options, fromCount) {
-        return (0, web3_1.subscribeContractEvent)(exports.PoapFactory.contract, this, options, "EventCreated", fromCount);
+        return (0, web3_1.subscribeContractEvent)(exports.PoapFactoryV2.contract, this, options, "EventCreated", fromCount);
     }
     subscribePoapMintedEvent(options, fromCount) {
-        return (0, web3_1.subscribeContractEvent)(exports.PoapFactory.contract, this, options, "PoapMinted", fromCount);
+        return (0, web3_1.subscribeContractEvent)(exports.PoapFactoryV2.contract, this, options, "PoapMinted", fromCount);
     }
     subscribePoapParticipatedInEvent(options, fromCount) {
-        return (0, web3_1.subscribeContractEvent)(exports.PoapFactory.contract, this, options, "PoapParticipatedIn", fromCount);
+        return (0, web3_1.subscribeContractEvent)(exports.PoapFactoryV2.contract, this, options, "PoapParticipatedIn", fromCount);
     }
     subscribeAllEvents(options, fromCount) {
-        return (0, web3_1.subscribeContractEvents)(exports.PoapFactory.contract, this, options, fromCount);
+        return (0, web3_1.subscribeContractEvents)(exports.PoapFactoryV2.contract, this, options, fromCount);
     }
     async multicall(callss) {
-        return await (0, web3_1.multicallMethods)(exports.PoapFactory, this, callss, contracts_1.getContractByCodeHash);
+        return await (0, web3_1.multicallMethods)(exports.PoapFactoryV2, this, callss, contracts_1.getContractByCodeHash);
     }
 }
-exports.PoapFactoryInstance = PoapFactoryInstance;
+exports.PoapFactoryV2Instance = PoapFactoryV2Instance;

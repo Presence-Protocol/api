@@ -1,14 +1,19 @@
 import { web3, Contract, MINIMAL_CONTRACT_DEPOSIT, DUST_AMOUNT, Subscription, contractIdFromAddress, addressFromContractId, hexToString, NetworkId } from '@alephium/web3'
-import { PoapFactory, PoapFactoryTypes } from '../artifacts/ts/PoapFactory'
 import { Transaction, Op, where } from 'sequelize';
 import { sequelize } from './models';
 
 import { loadDeployments } from '../artifacts/ts/deployments'
 import { Collection, Poap, EventStat } from './models';
+import { PoapFactoryV2, PoapFactoryV2Types } from '../artifacts/ts/PoapFactoryV2';
+
 
 
 const deployment = loadDeployments(process.env.NETWORK as NetworkId ?? 'testnet'); // TODO use getNetwork()
-const factoryContract = PoapFactory.at(deployment.contracts.PoapFactory.contractInstance.address);
+if(deployment.contracts.PoapFactoryV2 === undefined) {
+  console.error("PoapFactoryV2 contract not found in deployment");
+  process.exit(1);
+}
+const factoryContract = PoapFactoryV2.at(deployment.contracts.PoapFactoryV2.contractInstance.address);
 
 web3.setCurrentNodeProvider(
     process.env.PUBLIC_NODE_URL ?? "https://node.testnet.alephium.org",
@@ -93,7 +98,7 @@ export async function eventsFetcher() {
       messageCallback: async (event) => {
         eventQueue.push(event);
         if(event.name === "PoapMinted") {
-          const testevent = event as PoapFactoryTypes.PoapMintedEvent;
+          const testevent = event as PoapFactoryV2Types.PoapMintedEvent;
           console.log(`PoapMinted: ${testevent.fields.contractId} ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.caller}`);
         }
         if (eventQueue.length >= BATCH_SIZE) {

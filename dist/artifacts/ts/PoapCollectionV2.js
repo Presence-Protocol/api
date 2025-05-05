@@ -6,9 +6,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PoapCollectionInstance = exports.PoapCollection = void 0;
+exports.PoapCollectionV2Instance = exports.PoapCollectionV2 = void 0;
 const web3_1 = require("@alephium/web3");
-const PoapCollection_ral_json_1 = __importDefault(require("../PoapCollection.ral.json"));
+const PoapCollectionV2_ral_json_1 = __importDefault(require("../V2/PoapCollectionV2.ral.json"));
 const contracts_1 = require("./contracts");
 const types_1 = require("./types");
 class Factory extends web3_1.ContractFactory {
@@ -88,173 +88,173 @@ class Factory extends web3_1.ContractFactory {
         return (0, web3_1.encodeContractFields)((0, web3_1.addStdIdToFields)(this.contract, fields), this.contract.fieldsSig, types_1.AllStructs);
     }
     at(address) {
-        return new PoapCollectionInstance(address);
+        return new PoapCollectionV2Instance(address);
     }
     stateForTest(initFields, asset, address) {
         return this.stateForTest_(initFields, asset, address, undefined);
     }
 }
 // Use this object to test and deploy the contract
-exports.PoapCollection = new Factory(web3_1.Contract.fromJson(PoapCollection_ral_json_1.default, "", "8f4260b71ca702a8f112dc752756e960cd04ba852a15441417d895754165b1d5", types_1.AllStructs));
-(0, contracts_1.registerContract)(exports.PoapCollection);
+exports.PoapCollectionV2 = new Factory(web3_1.Contract.fromJson(PoapCollectionV2_ral_json_1.default, "", "502bbd8342f43fec66e7f2025ca64295edc92225904347b7a1d68549da3190c4", types_1.AllStructs));
+(0, contracts_1.registerContract)(exports.PoapCollectionV2);
 // Use this class to interact with the blockchain
-class PoapCollectionInstance extends web3_1.ContractInstance {
+class PoapCollectionV2Instance extends web3_1.ContractInstance {
     constructor(address) {
         super(address);
         this.view = {
             getCollectionUri: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "getCollectionUri", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "getCollectionUri", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             totalSupply: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "totalSupply", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "totalSupply", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             nftByIndex: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "nftByIndex", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "nftByIndex", params, contracts_1.getContractByCodeHash);
             },
             validateNFT: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "validateNFT", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "validateNFT", params, contracts_1.getContractByCodeHash);
             },
             convert: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "convert", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "convert", params, contracts_1.getContractByCodeHash);
             },
             mint: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "mint", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "mint", params, contracts_1.getContractByCodeHash);
             },
             setParticipatedPresence: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "setParticipatedPresence", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "setParticipatedPresence", params, contracts_1.getContractByCodeHash);
             },
             sendAirdrop: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "sendAirdrop", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "sendAirdrop", params, contracts_1.getContractByCodeHash);
             },
             nftByAddress: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "nftByAddress", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "nftByAddress", params, contracts_1.getContractByCodeHash);
             },
             validateNFTAddress: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "validateNFTAddress", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "validateNFTAddress", params, contracts_1.getContractByCodeHash);
             },
             getIsPublic: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "getIsPublic", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "getIsPublic", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             getAmountForStorageFees: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "getAmountForStorageFees", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "getAmountForStorageFees", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             getAirdropWhenHasParticipated: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "getAirdropWhenHasParticipated", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "getAirdropWhenHasParticipated", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             getAmountPoapFees: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "getAmountPoapFees", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "getAmountPoapFees", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             claimFunds: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "claimFunds", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "claimFunds", params, contracts_1.getContractByCodeHash);
             },
             withdrawStorageFees: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "withdrawStorageFees", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "withdrawStorageFees", params, contracts_1.getContractByCodeHash);
             },
             withdrawChainFees: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "withdrawChainFees", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "withdrawChainFees", params, contracts_1.getContractByCodeHash);
             },
             depositStorageFees: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "depositStorageFees", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "depositStorageFees", params, contracts_1.getContractByCodeHash);
             },
             depositChainFees: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "depositChainFees", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "depositChainFees", params, contracts_1.getContractByCodeHash);
             },
             withdrawAirdrop: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "withdrawAirdrop", params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "withdrawAirdrop", params, contracts_1.getContractByCodeHash);
             },
             getPoapPrice: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "getPoapPrice", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "getPoapPrice", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
             getOrganizer: async (params) => {
-                return (0, web3_1.callMethod)(exports.PoapCollection, this, "getOrganizer", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
+                return (0, web3_1.callMethod)(exports.PoapCollectionV2, this, "getOrganizer", params === undefined ? {} : params, contracts_1.getContractByCodeHash);
             },
         };
         this.transact = {
             getCollectionUri: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "getCollectionUri", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "getCollectionUri", params);
             },
             totalSupply: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "totalSupply", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "totalSupply", params);
             },
             nftByIndex: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "nftByIndex", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "nftByIndex", params);
             },
             validateNFT: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "validateNFT", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "validateNFT", params);
             },
             convert: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "convert", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "convert", params);
             },
             mint: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "mint", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "mint", params);
             },
             setParticipatedPresence: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "setParticipatedPresence", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "setParticipatedPresence", params);
             },
             sendAirdrop: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "sendAirdrop", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "sendAirdrop", params);
             },
             nftByAddress: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "nftByAddress", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "nftByAddress", params);
             },
             validateNFTAddress: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "validateNFTAddress", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "validateNFTAddress", params);
             },
             getIsPublic: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "getIsPublic", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "getIsPublic", params);
             },
             getAmountForStorageFees: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "getAmountForStorageFees", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "getAmountForStorageFees", params);
             },
             getAirdropWhenHasParticipated: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "getAirdropWhenHasParticipated", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "getAirdropWhenHasParticipated", params);
             },
             getAmountPoapFees: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "getAmountPoapFees", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "getAmountPoapFees", params);
             },
             claimFunds: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "claimFunds", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "claimFunds", params);
             },
             withdrawStorageFees: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "withdrawStorageFees", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "withdrawStorageFees", params);
             },
             withdrawChainFees: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "withdrawChainFees", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "withdrawChainFees", params);
             },
             depositStorageFees: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "depositStorageFees", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "depositStorageFees", params);
             },
             depositChainFees: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "depositChainFees", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "depositChainFees", params);
             },
             withdrawAirdrop: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "withdrawAirdrop", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "withdrawAirdrop", params);
             },
             getPoapPrice: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "getPoapPrice", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "getPoapPrice", params);
             },
             getOrganizer: async (params) => {
-                return (0, web3_1.signExecuteMethod)(exports.PoapCollection, this, "getOrganizer", params);
+                return (0, web3_1.signExecuteMethod)(exports.PoapCollectionV2, this, "getOrganizer", params);
             },
         };
     }
     async fetchState() {
-        return (0, web3_1.fetchContractState)(exports.PoapCollection, this);
+        return (0, web3_1.fetchContractState)(exports.PoapCollectionV2, this);
     }
     async getContractEventsCurrentCount() {
         return (0, web3_1.getContractEventsCurrentCount)(this.address);
     }
     subscribePoapMintedEvent(options, fromCount) {
-        return (0, web3_1.subscribeContractEvent)(exports.PoapCollection.contract, this, options, "PoapMinted", fromCount);
+        return (0, web3_1.subscribeContractEvent)(exports.PoapCollectionV2.contract, this, options, "PoapMinted", fromCount);
     }
     subscribePoapParticipatedEvent(options, fromCount) {
-        return (0, web3_1.subscribeContractEvent)(exports.PoapCollection.contract, this, options, "PoapParticipated", fromCount);
+        return (0, web3_1.subscribeContractEvent)(exports.PoapCollectionV2.contract, this, options, "PoapParticipated", fromCount);
     }
     subscribeAllEvents(options, fromCount) {
-        return (0, web3_1.subscribeContractEvents)(exports.PoapCollection.contract, this, options, fromCount);
+        return (0, web3_1.subscribeContractEvents)(exports.PoapCollectionV2.contract, this, options, fromCount);
     }
     async multicall(callss) {
-        return await (0, web3_1.multicallMethods)(exports.PoapCollection, this, callss, contracts_1.getContractByCodeHash);
+        return await (0, web3_1.multicallMethods)(exports.PoapCollectionV2, this, callss, contracts_1.getContractByCodeHash);
     }
 }
-exports.PoapCollectionInstance = PoapCollectionInstance;
+exports.PoapCollectionV2Instance = PoapCollectionV2Instance;
