@@ -5,6 +5,7 @@ import { sequelize } from './models';
 import { loadDeployments } from '../artifacts/ts/deployments'
 import { Collection, Poap, EventStat } from './models';
 import { PoapFactoryV2, PoapFactoryV2Types } from '../artifacts/ts/PoapFactoryV2';
+import { PoapFactory, PoapFactoryTypes } from '../artifacts/ts/PoapFactory';
 
 
 
@@ -13,7 +14,14 @@ if(deployment.contracts.PoapFactoryV2 === undefined) {
   console.error("PoapFactoryV2 contract not found in deployment");
   process.exit(1);
 }
-const factoryContract = PoapFactoryV2.at(deployment.contracts.PoapFactoryV2.contractInstance.address);
+
+if(deployment.contracts.PoapFactory === undefined) {
+  console.error("PoapFactory contract not found in deployment");
+}
+
+
+const factoryContract = PoapFactory.at('vUqaS4RGwaZ2NrjKgQr4etD4v3tVReuUKTtrdypSveaT');
+const factoryContractV2 = PoapFactoryV2.at(deployment.contracts.PoapFactoryV2.contractInstance.address);
 
 web3.setCurrentNodeProvider(
     process.env.PUBLIC_NODE_URL ?? "https://node.testnet.alephium.org",
@@ -32,10 +40,11 @@ export async function eventsFetcher() {
   const poapCount = await Poap.count();
   const collectionCount = await Collection.count();
   
-  const onChainCounter = await factoryContract.getContractEventsCurrentCount();
+  const onChainCounterV2 = await factoryContractV2.getContractEventsCurrentCount();
+  const onChainCounterV1 = await factoryContract.getContractEventsCurrentCount();
 
   // If both tables are empty, start from 0
-  const startCounter = (poapCount === 0 && collectionCount === 0) ? 0 : onChainCounter;
+  const startCounter = (poapCount === 0 && collectionCount === 0) ? 0 : Math.min(onChainCounterV1, onChainCounterV2);
 
 
   async function processBatch(events: any[], batchId: number) {
@@ -90,16 +99,18 @@ export async function eventsFetcher() {
     }
   }
 
-  let subscription: Subscription<any> | null = null;
+  let subscriptionV1: Subscription<any> | null = null;
+  let subscriptionV2: Subscription<any> | null = null;
 
   function startListener(fromCounter: number) {
-    subscription = factoryContract.subscribeAllEvents({
+    // Start listening to V1 events
+    subscriptionV1 = factoryContract.subscribeAllEvents({
       pollingInterval: 5000,
       messageCallback: async (event) => {
         eventQueue.push(event);
         if(event.name === "PoapMinted") {
-          const testevent = event as PoapFactoryV2Types.PoapMintedEvent;
-          console.log(`PoapMinted: ${testevent.fields.contractId} ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.caller}`);
+          const testevent = event as PoapFactoryTypes.PoapMintedEvent;
+          console.log(`PoapMinted V1: ${testevent.fields.contractId} ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.caller}`);
         }
         if (eventQueue.length >= BATCH_SIZE) {
           await processBatch([...eventQueue], batchId++);
@@ -107,11 +118,33 @@ export async function eventsFetcher() {
         }
       },
       errorCallback: async (error, subscription) => {
-        console.error(`Error from contract factory:`, error);
-        
-        // Unsubscribe and restart after a delay
+        console.error(`Error from contract factory V1:`, error);
         subscription.unsubscribe();
-        console.log('Restarting listener in 10 seconds...');
+        console.log('Restarting V1 listener in 10 seconds...');
+        setTimeout(() => {
+          startListener(startCounter);
+        }, 10000);
+      }
+    }, fromCounter);
+
+    // Start listening to V2 events
+    subscriptionV2 = factoryContractV2.subscribeAllEvents({
+      pollingInterval: 5000,
+      messageCallback: async (event) => {
+        eventQueue.push(event);
+        if(event.name === "PoapMinted") {
+          const testevent = event as PoapFactoryV2Types.PoapMintedEvent;
+          console.log(`PoapMinted V2: ${testevent.fields.contractId} ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.caller}`);
+        }
+        if (eventQueue.length >= BATCH_SIZE) {
+          await processBatch([...eventQueue], batchId++);
+          eventQueue = [];
+        }
+      },
+      errorCallback: async (error, subscription) => {
+        console.error(`Error from contract factory V2:`, error);
+        subscription.unsubscribe();
+        console.log('Restarting V2 listener in 10 seconds...');
         setTimeout(() => {
           startListener(startCounter);
         }, 10000);
