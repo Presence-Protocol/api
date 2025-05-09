@@ -15,12 +15,13 @@ if(deployment.contracts.PoapFactoryV2 === undefined) {
   process.exit(1);
 }
 
+let factoryContractV1Address = process.env.FACTORY_V1_ADDRESS ?? 'vUqaS4RGwaZ2NrjKgQr4etD4v3tVReuUKTtrdypSveaT'
 if(deployment.contracts.PoapFactory === undefined) {
   console.error("PoapFactory contract not found in deployment");
 }
 
 
-const factoryContract = PoapFactory.at('vUqaS4RGwaZ2NrjKgQr4etD4v3tVReuUKTtrdypSveaT');
+const factoryContract = PoapFactory.at(factoryContractV1Address);
 const factoryContractV2 = PoapFactoryV2.at(deployment.contracts.PoapFactoryV2.contractInstance.address);
 
 web3.setCurrentNodeProvider(
