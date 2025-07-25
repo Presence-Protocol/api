@@ -14,10 +14,25 @@ const types_1 = require("./types");
 class Factory extends web3_1.ContractFactory {
     constructor() {
         super(...arguments);
-        this.eventIndex = { EventCreated: 0, PoapMinted: 1, PoapParticipatedIn: 2 };
+        this.eventIndex = {
+            EventCreated: 0,
+            PoapMinted: 1,
+            PoapSerieMinted: 2,
+            PoapParticipatedIn: 3,
+            SerieAdded: 4,
+        };
         this.tests = {
             mintNewCollection: async (params) => {
                 return (0, web3_1.testMethod)(this, "mintNewCollection", params, contracts_1.getContractByCodeHash);
+            },
+            mintNewCollectionWithSerie: async (params) => {
+                return (0, web3_1.testMethod)(this, "mintNewCollectionWithSerie", params, contracts_1.getContractByCodeHash);
+            },
+            createNewEvent: async (params) => {
+                return (0, web3_1.testMethod)(this, "createNewEvent", params, contracts_1.getContractByCodeHash);
+            },
+            mintPoapSerie: async (params) => {
+                return (0, web3_1.testMethod)(this, "mintPoapSerie", params, contracts_1.getContractByCodeHash);
             },
             mintPoap: async (params) => {
                 return (0, web3_1.testMethod)(this, "mintPoap", params, contracts_1.getContractByCodeHash);
@@ -41,7 +56,7 @@ class Factory extends web3_1.ContractFactory {
     }
 }
 // Use this object to test and deploy the contract
-exports.PoapFactoryV2 = new Factory(web3_1.Contract.fromJson(PoapFactoryV2_ral_json_1.default, "", "95938fb7a773234e100a7a9aae9348de099c3f87148afa7a1037186db53750bb", types_1.AllStructs));
+exports.PoapFactoryV2 = new Factory(web3_1.Contract.fromJson(PoapFactoryV2_ral_json_1.default, "", "0b23b0e0ec8ba02da06e4e07fe8ab7c9e0ba2650d4ff8cdf11dc37cec55d8d75", types_1.AllStructs));
 (0, contracts_1.registerContract)(exports.PoapFactoryV2);
 // Use this class to interact with the blockchain
 class PoapFactoryV2Instance extends web3_1.ContractInstance {
@@ -50,6 +65,15 @@ class PoapFactoryV2Instance extends web3_1.ContractInstance {
         this.view = {
             mintNewCollection: async (params) => {
                 return (0, web3_1.callMethod)(exports.PoapFactoryV2, this, "mintNewCollection", params, contracts_1.getContractByCodeHash);
+            },
+            mintNewCollectionWithSerie: async (params) => {
+                return (0, web3_1.callMethod)(exports.PoapFactoryV2, this, "mintNewCollectionWithSerie", params, contracts_1.getContractByCodeHash);
+            },
+            createNewEvent: async (params) => {
+                return (0, web3_1.callMethod)(exports.PoapFactoryV2, this, "createNewEvent", params, contracts_1.getContractByCodeHash);
+            },
+            mintPoapSerie: async (params) => {
+                return (0, web3_1.callMethod)(exports.PoapFactoryV2, this, "mintPoapSerie", params, contracts_1.getContractByCodeHash);
             },
             mintPoap: async (params) => {
                 return (0, web3_1.callMethod)(exports.PoapFactoryV2, this, "mintPoap", params, contracts_1.getContractByCodeHash);
@@ -64,6 +88,15 @@ class PoapFactoryV2Instance extends web3_1.ContractInstance {
         this.transact = {
             mintNewCollection: async (params) => {
                 return (0, web3_1.signExecuteMethod)(exports.PoapFactoryV2, this, "mintNewCollection", params);
+            },
+            mintNewCollectionWithSerie: async (params) => {
+                return (0, web3_1.signExecuteMethod)(exports.PoapFactoryV2, this, "mintNewCollectionWithSerie", params);
+            },
+            createNewEvent: async (params) => {
+                return (0, web3_1.signExecuteMethod)(exports.PoapFactoryV2, this, "createNewEvent", params);
+            },
+            mintPoapSerie: async (params) => {
+                return (0, web3_1.signExecuteMethod)(exports.PoapFactoryV2, this, "mintPoapSerie", params);
             },
             mintPoap: async (params) => {
                 return (0, web3_1.signExecuteMethod)(exports.PoapFactoryV2, this, "mintPoap", params);
@@ -88,8 +121,14 @@ class PoapFactoryV2Instance extends web3_1.ContractInstance {
     subscribePoapMintedEvent(options, fromCount) {
         return (0, web3_1.subscribeContractEvent)(exports.PoapFactoryV2.contract, this, options, "PoapMinted", fromCount);
     }
+    subscribePoapSerieMintedEvent(options, fromCount) {
+        return (0, web3_1.subscribeContractEvent)(exports.PoapFactoryV2.contract, this, options, "PoapSerieMinted", fromCount);
+    }
     subscribePoapParticipatedInEvent(options, fromCount) {
         return (0, web3_1.subscribeContractEvent)(exports.PoapFactoryV2.contract, this, options, "PoapParticipatedIn", fromCount);
+    }
+    subscribeSerieAddedEvent(options, fromCount) {
+        return (0, web3_1.subscribeContractEvent)(exports.PoapFactoryV2.contract, this, options, "SerieAdded", fromCount);
     }
     subscribeAllEvents(options, fromCount) {
         return (0, web3_1.subscribeContractEvents)(exports.PoapFactoryV2.contract, this, options, fromCount);

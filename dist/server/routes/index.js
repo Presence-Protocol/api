@@ -142,14 +142,167 @@ router.get('/poap/stats/totaladdresses', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+// New endpoints for Series
+router.get('/series', async (req, res) => {
+    try {
+        const series = await models_1.Series.findAll({
+            where: { isPublic: true },
+            order: [['createdAt', 'DESC']],
+            limit: parseInt(req.query.limit) || 10
+        });
+        res.json(series);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+router.get('/series/:collectionId', async (req, res) => {
+    try {
+        const series = await models_1.Series.findAll({
+            where: { collectionContractId: req.params.collectionId },
+            order: [['createdAt', 'DESC']],
+            limit: parseInt(req.query.limit) || 20
+        });
+        res.json(series);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+router.get('/series/organizer/:address', async (req, res) => {
+    try {
+        const series = await models_1.Series.findAll({
+            where: { organizer: req.params.address },
+            order: [['createdAt', 'DESC']],
+            limit: parseInt(req.query.limit) || 20
+        });
+        res.json(series);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+// New endpoints for PoapSerie
+router.get('/poap-serie/:address', async (req, res) => {
+    try {
+        const { address } = req.params;
+        const { unique } = req.query;
+        let poapSeries;
+        if (unique === 'true') {
+            poapSeries = await models_1.PoapSerie.findAll({
+                where: { caller: address },
+                attributes: [
+                    [models_1.sequelize.fn('DISTINCT', models_1.sequelize.col('collectionContractId')), 'collectionContractId'],
+                    'contractId',
+                    'eventId',
+                    'nftIndex',
+                    'caller',
+                    'isPublic',
+                    'createdAt',
+                    [models_1.sequelize.fn('COUNT', models_1.sequelize.col('collectionContractId')), 'count']
+                ],
+                group: ['collectionContractId'],
+                order: [['createdAt', 'DESC']]
+            });
+        }
+        else {
+            poapSeries = await models_1.PoapSerie.findAll({
+                where: { caller: address },
+                order: [['createdAt', 'DESC']]
+            });
+        }
+        res.json(poapSeries);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+router.get('/poap-serie/minted/:seriesId', async (req, res) => {
+    try {
+        const poapSeries = await models_1.PoapSerie.findAll({
+            where: { collectionContractId: req.params.seriesId },
+            order: [['createdAt', 'DESC']],
+            limit: parseInt(req.query.limit) || 10
+        });
+        res.json(poapSeries);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+router.get('/poap-serie/minted-list/:seriesId', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 1000;
+        const offset = parseInt(req.query.offset) || 0;
+        const { count, rows: poapSeries } = await models_1.PoapSerie.findAndCountAll({
+            where: { collectionContractId: req.params.seriesId },
+            attributes: ['caller'],
+            order: [['createdAt', 'DESC']],
+            limit,
+            offset
+        });
+        res.json({
+            addresses: poapSeries.map(poap => poap.caller),
+            pagination: {
+                total: count,
+                limit,
+                offset,
+                hasMore: offset + limit < count
+            }
+        });
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+// Updated stats endpoint
 router.get('/stats/total', async (req, res) => {
     try {
         const totalCollections = await models_1.Collection.count();
+        const totalSeries = await models_1.Series.count();
         const totalPoaps = await models_1.Poap.count();
+        const totalPoapSeries = await models_1.PoapSerie.count();
         res.json({
             totalCollections,
-            totalPoaps
+            totalSeries,
+            totalPoaps,
+            totalPoapSeries
         });
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+// New stats endpoints
+router.get('/series/stats/totaladdresses', async (req, res) => {
+    try {
+        const seriesCounts = await models_1.Series.findAll({
+            attributes: [
+                'organizer',
+                [models_1.sequelize.fn('COUNT', models_1.sequelize.col('*')), 'seriesCount']
+            ],
+            group: ['organizer'],
+            order: [[models_1.sequelize.fn('COUNT', models_1.sequelize.col('*')), 'DESC']],
+            limit: parseInt(req.query.limit) || 20
+        });
+        res.json(seriesCounts);
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+router.get('/poap-serie/stats/totaladdresses', async (req, res) => {
+    try {
+        const poapSerieCounts = await models_1.PoapSerie.findAll({
+            attributes: [
+                'caller',
+                [models_1.sequelize.fn('COUNT', models_1.sequelize.col('*')), 'poapSerieCount']
+            ],
+            group: ['caller'],
+            order: [[models_1.sequelize.fn('COUNT', models_1.sequelize.col('*')), 'DESC']],
+            limit: parseInt(req.query.limit) || 20
+        });
+        res.json(poapSerieCounts);
     }
     catch (error) {
         res.status(500).json({ error: error.message });

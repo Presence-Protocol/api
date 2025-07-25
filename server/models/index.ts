@@ -32,9 +32,42 @@ class Collection extends Model<CollectionAttributes> implements CollectionAttrib
     public caller!: string;
     public isPublic!: boolean;
     public disabled!: boolean;
-    
 }
 
+interface SeriesAttributes {
+  contractId: string;
+  collectionContractId: string;
+  eventName: string;
+  organizer: string;
+  isPublic: boolean;
+}
+
+class Series extends Model<SeriesAttributes> implements SeriesAttributes {
+  public contractId!: string;
+  public collectionContractId!: string;
+  public eventName!: string;
+  public organizer!: string;
+  public isPublic!: boolean;
+}
+
+interface PoapSerieAttributes {
+  contractId: string;
+  collectionContractId: string;
+  eventId: number;
+  nftIndex: number;
+  caller: string;
+  isPublic: boolean;
+}
+
+class PoapSerie extends Model<PoapSerieAttributes> implements PoapSerieAttributes {
+  public contractId!: string;
+  public collectionContractId!: string;
+  public eventId!: number;
+  public nftIndex!: number;
+  public caller!: string;
+  public isPublic!: boolean;
+}
+    
 interface PoapAttributes {
     contractId: string;
     collectionContractId: string;
@@ -81,6 +114,80 @@ Collection.init({
 }, {
   sequelize,
   modelName: 'Event'
+});
+
+Series.init({
+  contractId: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+    allowNull: false,
+    unique: true,
+    validate: {
+      notEmpty: true
+    }
+  },
+  collectionContractId: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    references: {
+      model: 'Events',
+      key: 'contractId'
+    }
+  },
+  eventName: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  organizer: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  isPublic: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false
+  }
+}, {
+  sequelize,
+  modelName: 'Series'
+});
+
+PoapSerie.init({
+  contractId: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+    allowNull: false,
+    unique: true,
+    validate: {
+      notEmpty: true
+    }
+  },
+  collectionContractId: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    references: {
+      model: 'Series',
+      key: 'contractId'
+    }
+  },
+  eventId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  nftIndex: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  caller: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  isPublic: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false
+  }
+}, {
+  sequelize,
+  modelName: 'PoapSerie'
 });
 
 Poap.init({
@@ -130,4 +237,11 @@ Poap.init({
     modelName: 'EventStat'
   })
 
-export { sequelize, Collection, Poap, EventStat };
+// Define associations
+Collection.hasMany(Series, { foreignKey: 'collectionContractId', sourceKey: 'contractId' });
+Series.belongsTo(Collection, { foreignKey: 'collectionContractId', targetKey: 'contractId' });
+
+Series.hasMany(PoapSerie, { foreignKey: 'collectionContractId', sourceKey: 'contractId' });
+PoapSerie.belongsTo(Series, { foreignKey: 'collectionContractId', targetKey: 'contractId' });
+
+export { sequelize, Collection, Series, PoapSerie, Poap, EventStat };

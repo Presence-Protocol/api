@@ -13,18 +13,24 @@ const _deployments_testnet_json_1 = __importDefault(require("../../deployments/.
 const _deployments_devnet_json_1 = __importDefault(require("../../deployments/.deployments.devnet.json"));
 function toDeployments(json) {
     const contracts = {
-        PoapNFT: {
-            ...json.contracts["PoapNFT"],
-            contractInstance: _1.PoapNFT.at(json.contracts["PoapNFT"].contractInstance.address),
-        },
-        PoapCollection: {
-            ...json.contracts["PoapCollection"],
-            contractInstance: _1.PoapCollection.at(json.contracts["PoapCollection"].contractInstance.address),
-        },
-        PoapFactory: {
-            ...json.contracts["PoapFactory"],
-            contractInstance: _1.PoapFactory.at(json.contracts["PoapFactory"].contractInstance.address),
-        },
+        PoapNFT: json.contracts["PoapNFT"] === undefined
+            ? undefined
+            : {
+                ...json.contracts["PoapNFT"],
+                contractInstance: _1.PoapNFT.at(json.contracts["PoapNFT"].contractInstance.address),
+            },
+        PoapCollection: json.contracts["PoapCollection"] === undefined
+            ? undefined
+            : {
+                ...json.contracts["PoapCollection"],
+                contractInstance: _1.PoapCollection.at(json.contracts["PoapCollection"].contractInstance.address),
+            },
+        PoapFactory: json.contracts["PoapFactory"] === undefined
+            ? undefined
+            : {
+                ...json.contracts["PoapFactory"],
+                contractInstance: _1.PoapFactory.at(json.contracts["PoapFactory"].contractInstance.address),
+            },
         PoapNFTV2: json.contracts["PoapNFTV2"] === undefined
             ? undefined
             : {
@@ -42,6 +48,24 @@ function toDeployments(json) {
             : {
                 ...json.contracts["PoapFactoryV2"],
                 contractInstance: _1.PoapFactoryV2.at(json.contracts["PoapFactoryV2"].contractInstance.address),
+            },
+        PoapData: json.contracts["PoapData"] === undefined
+            ? undefined
+            : {
+                ...json.contracts["PoapData"],
+                contractInstance: _1.PoapData.at(json.contracts["PoapData"].contractInstance.address),
+            },
+        PoapSerieCollectionV2: json.contracts["PoapSerieCollectionV2"] === undefined
+            ? undefined
+            : {
+                ...json.contracts["PoapSerieCollectionV2"],
+                contractInstance: _1.PoapSerieCollectionV2.at(json.contracts["PoapSerieCollectionV2"].contractInstance.address),
+            },
+        PoapNFTSerieV2: json.contracts["PoapNFTSerieV2"] === undefined
+            ? undefined
+            : {
+                ...json.contracts["PoapNFTSerieV2"],
+                contractInstance: _1.PoapNFTSerieV2.at(json.contracts["PoapNFTSerieV2"].contractInstance.address),
             },
     };
     return {

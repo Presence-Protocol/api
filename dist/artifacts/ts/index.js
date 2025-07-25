@@ -19,9 +19,12 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./PoapCollection"), exports);
 __exportStar(require("./PoapCollectionV2"), exports);
+__exportStar(require("./PoapData"), exports);
 __exportStar(require("./PoapFactory"), exports);
 __exportStar(require("./PoapFactoryV2"), exports);
 __exportStar(require("./PoapNFT"), exports);
+__exportStar(require("./PoapNFTSerieV2"), exports);
 __exportStar(require("./PoapNFTV2"), exports);
+__exportStar(require("./PoapSerieCollectionV2"), exports);
 __exportStar(require("./contracts"), exports);
 __exportStar(require("./scripts"), exports);

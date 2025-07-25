@@ -6,8 +6,18 @@ const models_1 = require("./models");
 const deployments_1 = require("../artifacts/ts/deployments");
 const models_2 = require("./models");
 const PoapFactoryV2_1 = require("../artifacts/ts/PoapFactoryV2");
+const PoapFactory_1 = require("../artifacts/ts/PoapFactory");
 const deployment = (0, deployments_1.loadDeployments)(process.env.NETWORK ?? 'testnet'); // TODO use getNetwork()
-const factoryContract = PoapFactoryV2_1.PoapFactoryV2.at(deployment.contracts.PoapFactory.contractInstance.address);
+if (deployment.contracts.PoapFactoryV2 === undefined) {
+    console.error("PoapFactoryV2 contract not found in deployment");
+    process.exit(1);
+}
+let factoryContractV1Address = process.env.FACTORY_V1_ADDRESS ?? 'vUqaS4RGwaZ2NrjKgQr4etD4v3tVReuUKTtrdypSveaT';
+if (deployment.contracts.PoapFactory === undefined) {
+    console.error("PoapFactory contract not found in deployment");
+}
+const factoryContract = PoapFactory_1.PoapFactory.at(factoryContractV1Address);
+const factoryContractV2 = PoapFactoryV2_1.PoapFactoryV2.at(deployment.contracts.PoapFactoryV2.contractInstance.address);
 web3_1.web3.setCurrentNodeProvider(process.env.PUBLIC_NODE_URL ?? "https://node.testnet.alephium.org", undefined, undefined);
 async function eventsFetcher() {
     let eventQueue = [];
@@ -17,9 +27,10 @@ async function eventsFetcher() {
     // Check if tables are empty
     const poapCount = await models_2.Poap.count();
     const collectionCount = await models_2.Collection.count();
-    const onChainCounter = await factoryContract.getContractEventsCurrentCount();
+    const onChainCounterV2 = await factoryContractV2.getContractEventsCurrentCount();
+    const onChainCounterV1 = await factoryContract.getContractEventsCurrentCount();
     // If both tables are empty, start from 0
-    const startCounter = (poapCount === 0 && collectionCount === 0) ? 0 : onChainCounter;
+    const startCounter = (poapCount === 0 && collectionCount === 0) ? 0 : Math.min(onChainCounterV1, onChainCounterV2);
     async function processBatch(events, batchId) {
         const t = await models_1.sequelize.transaction();
         const timerLabel = `batch-process-${batchId}-${Date.now()}`;
@@ -27,6 +38,8 @@ async function eventsFetcher() {
         try {
             const poapEvents = events.filter(e => e.name === "PoapMinted");
             const collectionEvents = events.filter(e => e.name === "EventCreated");
+            const serieAddedEvents = events.filter(e => e.name === "SerieAdded");
+            const poapSerieMintedEvents = events.filter(e => e.name === "PoapSerieMinted");
             await Promise.all([
                 // Batch process POAPs
                 poapEvents.length > 0 && models_2.Poap.bulkCreate(poapEvents.map(event => ({
@@ -49,6 +62,29 @@ async function eventsFetcher() {
                 })), {
                     transaction: t,
                     updateOnDuplicate: ["eventName", "caller"]
+                }),
+                // Batch process Serie Added Events
+                serieAddedEvents.length > 0 && models_2.Series.bulkCreate(serieAddedEvents.map(event => ({
+                    contractId: event.fields.eventContractId,
+                    collectionContractId: event.fields.collectionId,
+                    eventName: (0, web3_1.hexToString)(event.fields.eventName),
+                    organizer: event.fields.organizer,
+                    isPublic: event.fields.isPublic
+                })), {
+                    transaction: t,
+                    updateOnDuplicate: ["eventName", "organizer"]
+                }),
+                // Batch process PoapSerieMinted Events
+                poapSerieMintedEvents.length > 0 && models_2.PoapSerie.bulkCreate(poapSerieMintedEvents.map(event => ({
+                    contractId: event.fields.contractId,
+                    collectionContractId: event.fields.collectionId,
+                    eventId: Number(event.fields.eventId),
+                    nftIndex: Number(event.fields.nftIndex),
+                    caller: event.fields.caller,
+                    isPublic: event.fields.isPublic
+                })), {
+                    transaction: t,
+                    updateOnDuplicate: ["eventId", "nftIndex", "caller"]
                 })
             ]);
             await t.commit();
@@ -60,15 +96,17 @@ async function eventsFetcher() {
             console.error(`Batch ${batchId} processing error:`, error);
         }
     }
-    let subscription = null;
+    let subscriptionV1 = null;
+    let subscriptionV2 = null;
     function startListener(fromCounter) {
-        subscription = factoryContract.subscribeAllEvents({
+        // Start listening to V1 events
+        subscriptionV1 = factoryContract.subscribeAllEvents({
             pollingInterval: 5000,
             messageCallback: async (event) => {
                 eventQueue.push(event);
                 if (event.name === "PoapMinted") {
                     const testevent = event;
-                    console.log(`PoapMinted: ${testevent.fields.contractId} ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.caller}`);
+                    console.log(`PoapMinted V1: ${testevent.fields.contractId} ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.caller}`);
                 }
                 if (eventQueue.length >= BATCH_SIZE) {
                     await processBatch([...eventQueue], batchId++);
@@ -76,10 +114,40 @@ async function eventsFetcher() {
                 }
             },
             errorCallback: async (error, subscription) => {
-                console.error(`Error from contract factory:`, error);
-                // Unsubscribe and restart after a delay
+                console.error(`Error from contract factory V1:`, error);
                 subscription.unsubscribe();
-                console.log('Restarting listener in 10 seconds...');
+                console.log('Restarting V1 listener in 10 seconds...');
+                setTimeout(() => {
+                    startListener(startCounter);
+                }, 10000);
+            }
+        }, fromCounter);
+        // Start listening to V2 events
+        subscriptionV2 = factoryContractV2.subscribeAllEvents({
+            pollingInterval: 5000,
+            messageCallback: async (event) => {
+                eventQueue.push(event);
+                if (event.name === "PoapMinted") {
+                    const testevent = event;
+                    console.log(`PoapMinted V2: ${testevent.fields.contractId} ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.caller}`);
+                }
+                if (event.name === "SerieAdded") {
+                    const testevent = event;
+                    console.log(`Series added V2: ${testevent.fields.collectionId} ${testevent.fields.eventContractId} ${testevent.fields.eventName} ${testevent.fields.organizer} ${testevent.fields.isPublic}`);
+                }
+                if (event.name === "PoapSerieMinted") {
+                    const testevent = event;
+                    console.log(`PoapSerieMinted V2: ${testevent.fields.contractId} ${testevent.fields.caller} ${testevent.fields.eventId} ${testevent.fields.nftIndex} ${testevent.fields.timestamp}`);
+                }
+                if (eventQueue.length >= BATCH_SIZE) {
+                    await processBatch([...eventQueue], batchId++);
+                    eventQueue = [];
+                }
+            },
+            errorCallback: async (error, subscription) => {
+                console.error(`Error from contract factory V2:`, error);
+                subscription.unsubscribe();
+                console.log('Restarting V2 listener in 10 seconds...');
                 setTimeout(() => {
                     startListener(startCounter);
                 }, 10000);

@@ -3,7 +3,7 @@ import { Transaction, Op, where } from 'sequelize';
 import { sequelize } from './models';
 
 import { loadDeployments } from '../artifacts/ts/deployments'
-import { Collection, Poap, EventStat } from './models';
+import { Collection, Series, PoapSerie, Poap, EventStat } from './models';
 import { PoapFactoryV2, PoapFactoryV2Types } from '../artifacts/ts/PoapFactoryV2';
 import { PoapFactory, PoapFactoryTypes } from '../artifacts/ts/PoapFactory';
 
@@ -56,6 +56,8 @@ export async function eventsFetcher() {
     try {
       const poapEvents = events.filter(e => e.name === "PoapMinted");
       const collectionEvents = events.filter(e => e.name === "EventCreated");
+      const serieAddedEvents = events.filter(e => e.name === "SerieAdded");
+      const poapSerieMintedEvents = events.filter(e => e.name === "PoapSerieMinted");
       
 
       await Promise.all([
@@ -86,6 +88,37 @@ export async function eventsFetcher() {
           {
             transaction: t,
             updateOnDuplicate: ["eventName", "caller"]
+          }
+        ),
+
+        // Batch process Serie Added Events
+        serieAddedEvents.length > 0 && Series.bulkCreate(
+          serieAddedEvents.map(event => ({
+            contractId: event.fields.eventContractId,
+            collectionContractId: event.fields.collectionId,
+            eventName: hexToString(event.fields.eventName),
+            organizer: event.fields.organizer,
+            isPublic: event.fields.isPublic
+          })),
+          {
+            transaction: t,
+            updateOnDuplicate: ["eventName", "organizer"]
+          }
+        ),
+
+        // Batch process PoapSerieMinted Events
+        poapSerieMintedEvents.length > 0 && PoapSerie.bulkCreate(
+          poapSerieMintedEvents.map(event => ({
+            contractId: event.fields.contractId,
+            collectionContractId: event.fields.collectionId,
+            eventId: Number(event.fields.eventId),
+            nftIndex: Number(event.fields.nftIndex),
+            caller: event.fields.caller,
+            isPublic: event.fields.isPublic
+          })),
+          {
+            transaction: t,
+            updateOnDuplicate: ["eventId", "nftIndex", "caller"]
           }
         )
       ]);
@@ -137,6 +170,18 @@ export async function eventsFetcher() {
           const testevent = event as PoapFactoryV2Types.PoapMintedEvent;
           console.log(`PoapMinted V2: ${testevent.fields.contractId} ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.caller}`);
         }
+
+        if (event.name === "SerieAdded") {
+          const testevent = event as PoapFactoryV2Types.SerieAddedEvent;
+          console.log(`Series added V2: ${testevent.fields.collectionId} ${testevent.fields.eventContractId} ${testevent.fields.eventName} ${testevent.fields.organizer} ${testevent.fields.isPublic}`);
+        }
+
+        if (event.name === "PoapSerieMinted") {
+          const testevent = event as PoapFactoryV2Types.PoapSerieMintedEvent;
+          console.log(`PoapSerieMinted V2: ${testevent.fields.contractId} ${testevent.fields.caller} ${testevent.fields.eventId} ${testevent.fields.nftIndex} ${testevent.fields.timestamp}`);
+        }
+
+
         if (eventQueue.length >= BATCH_SIZE) {
           await processBatch([...eventQueue], batchId++);
           eventQueue = [];

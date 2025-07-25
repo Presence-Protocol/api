@@ -95,7 +95,7 @@ class Factory extends web3_1.ContractFactory {
     }
 }
 // Use this object to test and deploy the contract
-exports.PoapCollectionV2 = new Factory(web3_1.Contract.fromJson(PoapCollectionV2_ral_json_1.default, "", "502bbd8342f43fec66e7f2025ca64295edc92225904347b7a1d68549da3190c4", types_1.AllStructs));
+exports.PoapCollectionV2 = new Factory(web3_1.Contract.fromJson(PoapCollectionV2_ral_json_1.default, "", "51762012c8a61099bd9a1d2aca234709cce484402147fb87124049dfe9ac1a20", types_1.AllStructs));
 (0, contracts_1.registerContract)(exports.PoapCollectionV2);
 // Use this class to interact with the blockchain
 class PoapCollectionV2Instance extends web3_1.ContractInstance {

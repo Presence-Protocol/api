@@ -20,6 +20,12 @@ import {
   PoapCollectionV2Instance,
   PoapFactoryV2,
   PoapFactoryV2Instance,
+  PoapData,
+  PoapDataInstance,
+  PoapSerieCollectionV2,
+  PoapSerieCollectionV2Instance,
+  PoapNFTSerieV2,
+  PoapNFTSerieV2Instance,
 } from ".";
 import { default as mainnetDeployments } from "../../deployments/.deployments.mainnet.json";
 import { default as testnetDeployments } from "../../deployments/.deployments.testnet.json";
@@ -34,6 +40,9 @@ export type Deployments = {
     PoapNFTV2?: DeployContractExecutionResult<PoapNFTV2Instance>;
     PoapCollectionV2?: DeployContractExecutionResult<PoapCollectionV2Instance>;
     PoapFactoryV2?: DeployContractExecutionResult<PoapFactoryV2Instance>;
+    PoapData?: DeployContractExecutionResult<PoapDataInstance>;
+    PoapSerieCollectionV2?: DeployContractExecutionResult<PoapSerieCollectionV2Instance>;
+    PoapNFTSerieV2?: DeployContractExecutionResult<PoapNFTSerieV2Instance>;
   };
 };
 
@@ -91,6 +100,33 @@ function toDeployments(json: any): Deployments {
             ...json.contracts["PoapFactoryV2"],
             contractInstance: PoapFactoryV2.at(
               json.contracts["PoapFactoryV2"].contractInstance.address
+            ),
+          },
+    PoapData:
+      json.contracts["PoapData"] === undefined
+        ? undefined
+        : {
+            ...json.contracts["PoapData"],
+            contractInstance: PoapData.at(
+              json.contracts["PoapData"].contractInstance.address
+            ),
+          },
+    PoapSerieCollectionV2:
+      json.contracts["PoapSerieCollectionV2"] === undefined
+        ? undefined
+        : {
+            ...json.contracts["PoapSerieCollectionV2"],
+            contractInstance: PoapSerieCollectionV2.at(
+              json.contracts["PoapSerieCollectionV2"].contractInstance.address
+            ),
+          },
+    PoapNFTSerieV2:
+      json.contracts["PoapNFTSerieV2"] === undefined
+        ? undefined
+        : {
+            ...json.contracts["PoapNFTSerieV2"],
+            contractInstance: PoapNFTSerieV2.at(
+              json.contracts["PoapNFTSerieV2"].contractInstance.address
             ),
           },
   };

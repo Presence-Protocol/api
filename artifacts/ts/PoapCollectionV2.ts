@@ -40,6 +40,7 @@ import { Trait, AllStructs } from "./types";
 // Custom types for the contract
 export namespace PoapCollectionV2Types {
   export type Fields = {
+    factoryId: HexString;
     nftTemplateId: HexString;
     maxSupply: bigint;
     mintStartAt: bigint;
@@ -105,13 +106,18 @@ export namespace PoapCollectionV2Types {
       result: CallContractResult<HexString>;
     };
     mint: {
-      params: CallContractParams<{ amount: bigint; password: HexString }>;
+      params: CallContractParams<{
+        amount: bigint;
+        password: HexString;
+        initialCaller: Address;
+      }>;
       result: CallContractResult<HexString>;
     };
     setParticipatedPresence: {
       params: CallContractParams<{
         nftIndex: bigint;
         presenceAddressValidate: Address;
+        initialCaller: Address;
       }>;
       result: CallContractResult<null>;
     };
@@ -220,6 +226,7 @@ export namespace PoapCollectionV2Types {
       params: SignExecuteContractMethodParams<{
         amount: bigint;
         password: HexString;
+        initialCaller: Address;
       }>;
       result: SignExecuteScriptTxResult;
     };
@@ -227,6 +234,7 @@ export namespace PoapCollectionV2Types {
       params: SignExecuteContractMethodParams<{
         nftIndex: bigint;
         presenceAddressValidate: Address;
+        initialCaller: Address;
       }>;
       result: SignExecuteScriptTxResult;
     };
@@ -367,7 +375,7 @@ class Factory extends ContractFactory<
     mint: async (
       params: TestContractParamsWithoutMaps<
         PoapCollectionV2Types.Fields,
-        { amount: bigint; password: HexString }
+        { amount: bigint; password: HexString; initialCaller: Address }
       >
     ): Promise<TestContractResultWithoutMaps<HexString>> => {
       return testMethod(this, "mint", params, getContractByCodeHash);
@@ -375,7 +383,11 @@ class Factory extends ContractFactory<
     setParticipatedPresence: async (
       params: TestContractParamsWithoutMaps<
         PoapCollectionV2Types.Fields,
-        { nftIndex: bigint; presenceAddressValidate: Address }
+        {
+          nftIndex: bigint;
+          presenceAddressValidate: Address;
+          initialCaller: Address;
+        }
       >
     ): Promise<TestContractResultWithoutMaps<null>> => {
       return testMethod(
@@ -561,7 +573,7 @@ export const PoapCollectionV2 = new Factory(
   Contract.fromJson(
     PoapCollectionV2ContractJson,
     "",
-    "6ab23409a3fc421004b40f29d06d92f8984a72c0bc08af7c8ce81e3a87ca213b",
+    "51762012c8a61099bd9a1d2aca234709cce484402147fb87124049dfe9ac1a20",
     AllStructs
   )
 );
