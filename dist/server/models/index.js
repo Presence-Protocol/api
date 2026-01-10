@@ -126,6 +126,11 @@ PoapSerie.init({
     isPublic: {
         type: sequelize_1.DataTypes.BOOLEAN,
         allowNull: false
+    },
+    hasParticipated: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
     }
 }, {
     sequelize,
@@ -156,6 +161,11 @@ Poap.init({
     isPublic: {
         type: sequelize_1.DataTypes.BOOLEAN,
         allowNull: false
+    },
+    hasParticipated: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
     }
 }, {
     sequelize,

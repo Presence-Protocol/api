@@ -24,6 +24,8 @@ interface CollectionAttributes {
   caller: string
   isPublic: boolean
   disabled: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 class Collection extends Model<CollectionAttributes> implements CollectionAttributes {
@@ -32,40 +34,81 @@ class Collection extends Model<CollectionAttributes> implements CollectionAttrib
     public caller!: string;
     public isPublic!: boolean;
     public disabled!: boolean;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
 }
 
-interface SeriesAttributes {
+// SeriesCollection table: Stores series collections (parent container for series events)
+// This is separate from the Collection/Event table which stores single events
+interface SeriesCollectionAttributes {
   contractId: string;
-  collectionContractId: string;
   eventName: string;
+  caller: string;
+  isPublic: boolean;
+  disabled: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+class SeriesCollection extends Model<SeriesCollectionAttributes> implements SeriesCollectionAttributes {
+  public contractId!: string;
+  public eventName!: string;
+  public caller!: string;
+  public isPublic!: boolean;
+  public disabled!: boolean;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
+
+// SeriesEvent table: Stores individual events within a series collection
+// Each record represents one event that can have multiple attendees
+interface SeriesEventAttributes {
+  contractId: string;
+  seriesContractId: string;
+  eventName: string;
+  eventId: number;
   organizer: string;
   isPublic: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-class Series extends Model<SeriesAttributes> implements SeriesAttributes {
+class SeriesEvent extends Model<SeriesEventAttributes> implements SeriesEventAttributes {
   public contractId!: string;
-  public collectionContractId!: string;
+  public seriesContractId!: string;
   public eventName!: string;
+  public eventId!: number;
   public organizer!: string;
   public isPublic!: boolean;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
+// PoapSerie table: Stores POAPs minted for events within a series
+// Each record represents one person attending one event in the series
+// Multiple records can exist for the same eventId (multiple people attending the same event)
 interface PoapSerieAttributes {
   contractId: string;
-  collectionContractId: string;
-  eventId: number;
+  seriesContractId: string;
+  eventId: number; // References which event in the series
   nftIndex: number;
   caller: string;
   isPublic: boolean;
+  hasParticipated?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 class PoapSerie extends Model<PoapSerieAttributes> implements PoapSerieAttributes {
   public contractId!: string;
-  public collectionContractId!: string;
+  public seriesContractId!: string;
   public eventId!: number;
   public nftIndex!: number;
   public caller!: string;
   public isPublic!: boolean;
+  public hasParticipated!: boolean;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
     
 interface PoapAttributes {
@@ -74,14 +117,20 @@ interface PoapAttributes {
     nftIndex: number;
     caller: string;
     isPublic: boolean;
+    hasParticipated?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
   }
-  
+
   class Poap extends Model<PoapAttributes> implements PoapAttributes {
     public contractId!: string;
     public collectionContractId!: string;
     public nftIndex!: number;
     public caller!: string;
     public isPublic!: boolean;
+    public hasParticipated!: boolean;
+    public readonly createdAt!: Date;
+    public readonly updatedAt!: Date;
   }
 
 Collection.init({
@@ -116,7 +165,7 @@ Collection.init({
   modelName: 'Event'
 });
 
-Series.init({
+SeriesCollection.init({
   contractId: {
     type: DataTypes.STRING,
     primaryKey: true,
@@ -126,16 +175,52 @@ Series.init({
       notEmpty: true
     }
   },
-  collectionContractId: {
+  eventName: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  caller: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  isPublic: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false
+  },
+  disabled: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  }
+}, {
+  sequelize,
+  modelName: 'SeriesCollection'
+});
+
+SeriesEvent.init({
+  contractId: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+    allowNull: false,
+    unique: true,
+    validate: {
+      notEmpty: true
+    }
+  },
+  seriesContractId: {
     type: DataTypes.STRING,
     allowNull: false,
     references: {
-      model: 'Events',
+      model: 'SeriesCollections',
       key: 'contractId'
     }
   },
   eventName: {
     type: DataTypes.STRING,
+    allowNull: false
+  },
+  eventId: {
+    type: DataTypes.INTEGER,
     allowNull: false
   },
   organizer: {
@@ -148,7 +233,7 @@ Series.init({
   }
 }, {
   sequelize,
-  modelName: 'Series'
+  modelName: 'SeriesEvent'
 });
 
 PoapSerie.init({
@@ -161,11 +246,11 @@ PoapSerie.init({
       notEmpty: true
     }
   },
-  collectionContractId: {
+  seriesContractId: {
     type: DataTypes.STRING,
     allowNull: false,
     references: {
-      model: 'Series',
+      model: 'SeriesCollections',
       key: 'contractId'
     }
   },
@@ -184,6 +269,11 @@ PoapSerie.init({
   isPublic: {
     type: DataTypes.BOOLEAN,
     allowNull: false
+  },
+  hasParticipated: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
   }
 }, {
   sequelize,
@@ -215,6 +305,11 @@ Poap.init({
     isPublic: {
       type: DataTypes.BOOLEAN,
       allowNull: false
+    },
+    hasParticipated: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   }, {
     sequelize,
@@ -238,10 +333,12 @@ Poap.init({
   })
 
 // Define associations
-Collection.hasMany(Series, { foreignKey: 'collectionContractId', sourceKey: 'contractId' });
-Series.belongsTo(Collection, { foreignKey: 'collectionContractId', targetKey: 'contractId' });
+// SeriesCollection has many SeriesEvents (events within a series)
+SeriesCollection.hasMany(SeriesEvent, { foreignKey: 'seriesContractId', sourceKey: 'contractId' });
+SeriesEvent.belongsTo(SeriesCollection, { foreignKey: 'seriesContractId', targetKey: 'contractId' });
 
-Series.hasMany(PoapSerie, { foreignKey: 'collectionContractId', sourceKey: 'contractId' });
-PoapSerie.belongsTo(Series, { foreignKey: 'collectionContractId', targetKey: 'contractId' });
+// SeriesCollection has many PoapSerie (POAPs minted for the series)
+SeriesCollection.hasMany(PoapSerie, { foreignKey: 'seriesContractId', sourceKey: 'contractId' });
+PoapSerie.belongsTo(SeriesCollection, { foreignKey: 'seriesContractId', targetKey: 'contractId' });
 
-export { sequelize, Collection, Series, PoapSerie, Poap, EventStat };
+export { sequelize, Collection, SeriesCollection, SeriesEvent, PoapSerie, Poap, EventStat };

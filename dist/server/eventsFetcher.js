@@ -40,6 +40,7 @@ async function eventsFetcher() {
             const collectionEvents = events.filter(e => e.name === "EventCreated");
             const serieAddedEvents = events.filter(e => e.name === "SerieAdded");
             const poapSerieMintedEvents = events.filter(e => e.name === "PoapSerieMinted");
+            const poapParticipatedEvents = events.filter(e => e.name === "PoapParticipatedIn");
             await Promise.all([
                 // Batch process POAPs
                 poapEvents.length > 0 && models_2.Poap.bulkCreate(poapEvents.map(event => ({
@@ -87,6 +88,18 @@ async function eventsFetcher() {
                     updateOnDuplicate: ["eventId", "nftIndex", "caller"]
                 })
             ]);
+            // Process participation events - these update existing records
+            if (poapParticipatedEvents.length > 0) {
+                for (const event of poapParticipatedEvents) {
+                    await models_2.Poap.update({ hasParticipated: true }, {
+                        where: {
+                            collectionContractId: event.fields.collectionId,
+                            nftIndex: Number(event.fields.nftIndex)
+                        },
+                        transaction: t
+                    });
+                }
+            }
             await t.commit();
             console.timeEnd(timerLabel);
             console.log(`Processed batch ${batchId} with ${events.length} events`);
@@ -138,6 +151,10 @@ async function eventsFetcher() {
                 if (event.name === "PoapSerieMinted") {
                     const testevent = event;
                     console.log(`PoapSerieMinted V2: ${testevent.fields.contractId} ${testevent.fields.caller} ${testevent.fields.eventId} ${testevent.fields.nftIndex} ${testevent.fields.timestamp}`);
+                }
+                if (event.name === "PoapParticipatedIn") {
+                    const testevent = event;
+                    console.log(`PoapParticipatedIn V2: ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.organizerAddress}`);
                 }
                 if (eventQueue.length >= BATCH_SIZE) {
                     await processBatch([...eventQueue], batchId++);

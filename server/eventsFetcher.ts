@@ -3,7 +3,7 @@ import { Transaction, Op, where } from 'sequelize';
 import { sequelize } from './models';
 
 import { loadDeployments } from '../artifacts/ts/deployments'
-import { Collection, Series, PoapSerie, Poap, EventStat } from './models';
+import { Collection, SeriesCollection, SeriesEvent, PoapSerie, Poap, EventStat } from './models';
 import { PoapFactoryV2, PoapFactoryV2Types } from '../artifacts/ts/PoapFactoryV2';
 import { PoapFactory, PoapFactoryTypes } from '../artifacts/ts/PoapFactory';
 
@@ -30,6 +30,14 @@ web3.setCurrentNodeProvider(
     undefined
   );
 
+// Helper function to remove group suffix (e.g., ":0", ":1") from addresses
+function normalizeAddress(address: string): string {
+  const colonIndex = address.indexOf(':');
+  if (colonIndex !== -1) {
+    return address.substring(0, colonIndex);
+  }
+  return address;
+}
 
 export async function eventsFetcher() {
   let eventQueue: any[] = [];
@@ -58,7 +66,8 @@ export async function eventsFetcher() {
       const collectionEvents = events.filter(e => e.name === "EventCreated");
       const serieAddedEvents = events.filter(e => e.name === "SerieAdded");
       const poapSerieMintedEvents = events.filter(e => e.name === "PoapSerieMinted");
-      
+      const poapParticipatedEvents = events.filter(e => e.name === "PoapParticipatedIn");
+
 
       await Promise.all([
         // Batch process POAPs
@@ -67,7 +76,7 @@ export async function eventsFetcher() {
             contractId: event.fields.contractId,
             collectionContractId: event.fields.collectionId,
             nftIndex: Number(event.fields.nftIndex),
-            caller: event.fields.caller,
+            caller: normalizeAddress(event.fields.caller),
             isPublic: event.fields.isPublic
           })), 
           { 
@@ -76,14 +85,14 @@ export async function eventsFetcher() {
           }
         ),
 
-        // Batch process Collections
-        collectionEvents.length > 0 && Collection.bulkCreate(
-          collectionEvents.map(event => ({
+        // Batch process single event Collections (non-series)
+        collectionEvents.filter(e => !e.fields.isSeries).length > 0 && Collection.bulkCreate(
+          collectionEvents.filter(e => !e.fields.isSeries).map(event => ({
             contractId: event.fields.contractId,
             eventName: hexToString(event.fields.eventName),
-            caller: event.fields.organizer,
+            caller: normalizeAddress(event.fields.organizer),
             isPublic: event.fields.isPublic,
-            disabled: event.fields.disabled
+            disabled: event.fields.disabled || false
           })),
           {
             transaction: t,
@@ -91,18 +100,34 @@ export async function eventsFetcher() {
           }
         ),
 
-        // Batch process Serie Added Events
-        serieAddedEvents.length > 0 && Series.bulkCreate(
+        // Batch process series Collections (isSeries = true)
+        collectionEvents.filter(e => e.fields.isSeries).length > 0 && SeriesCollection.bulkCreate(
+          collectionEvents.filter(e => e.fields.isSeries).map(event => ({
+            contractId: event.fields.contractId,
+            eventName: hexToString(event.fields.eventName),
+            caller: normalizeAddress(event.fields.organizer),
+            isPublic: event.fields.isPublic,
+            disabled: event.fields.disabled || false
+          })),
+          {
+            transaction: t,
+            updateOnDuplicate: ["eventName", "caller"]
+          }
+        ),
+
+        // Batch process Serie Added Events (events within a series)
+        serieAddedEvents.length > 0 && SeriesEvent.bulkCreate(
           serieAddedEvents.map(event => ({
             contractId: event.fields.eventContractId,
-            collectionContractId: event.fields.collectionId,
+            seriesContractId: event.fields.collectionId,
             eventName: hexToString(event.fields.eventName),
-            organizer: event.fields.organizer,
+            eventId: Number(event.fields.eventId),
+            organizer: normalizeAddress(event.fields.organizer),
             isPublic: event.fields.isPublic
           })),
           {
             transaction: t,
-            updateOnDuplicate: ["eventName", "organizer"]
+            updateOnDuplicate: ["eventName", "eventId", "organizer"]
           }
         ),
 
@@ -110,10 +135,10 @@ export async function eventsFetcher() {
         poapSerieMintedEvents.length > 0 && PoapSerie.bulkCreate(
           poapSerieMintedEvents.map(event => ({
             contractId: event.fields.contractId,
-            collectionContractId: event.fields.collectionId,
+            seriesContractId: event.fields.collectionId,
             eventId: Number(event.fields.eventId),
             nftIndex: Number(event.fields.nftIndex),
-            caller: event.fields.caller,
+            caller: normalizeAddress(event.fields.caller),
             isPublic: event.fields.isPublic
           })),
           {
@@ -122,6 +147,22 @@ export async function eventsFetcher() {
           }
         )
       ]);
+
+      // Process participation events - these update existing records
+      if (poapParticipatedEvents.length > 0) {
+        for (const event of poapParticipatedEvents) {
+          await Poap.update(
+            { hasParticipated: true },
+            {
+              where: {
+                collectionContractId: event.fields.collectionId,
+                nftIndex: Number(event.fields.nftIndex)
+              },
+              transaction: t
+            }
+          );
+        }
+      }
 
       await t.commit();
       console.timeEnd(timerLabel);
@@ -173,7 +214,7 @@ export async function eventsFetcher() {
 
         if (event.name === "SerieAdded") {
           const testevent = event as PoapFactoryV2Types.SerieAddedEvent;
-          console.log(`Series added V2: ${testevent.fields.collectionId} ${testevent.fields.eventContractId} ${testevent.fields.eventName} ${testevent.fields.organizer} ${testevent.fields.isPublic}`);
+          console.log(`Series added V2: ${testevent.fields.collectionId} ${testevent.fields.eventContractId} ${testevent.fields.eventId} ${testevent.fields.eventName} ${testevent.fields.organizer} ${testevent.fields.isPublic}`);
         }
 
         if (event.name === "PoapSerieMinted") {
@@ -181,6 +222,10 @@ export async function eventsFetcher() {
           console.log(`PoapSerieMinted V2: ${testevent.fields.contractId} ${testevent.fields.caller} ${testevent.fields.eventId} ${testevent.fields.nftIndex} ${testevent.fields.timestamp}`);
         }
 
+        if (event.name === "PoapParticipatedIn") {
+          const testevent = event as PoapFactoryV2Types.PoapParticipatedInEvent;
+          console.log(`PoapParticipatedIn V2: ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.organizerAddress}`);
+        }
 
         if (eventQueue.length >= BATCH_SIZE) {
           await processBatch([...eventQueue], batchId++);
