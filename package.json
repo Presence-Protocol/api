@@ -20,7 +20,7 @@
     "typescript": "^5.7.3"
   },
   "dependencies": {
-    "@alephium/web3": "^1.11.3",
+    "@alephium/web3": "^2.0.8",
     "express": "^4.21.2",
     "sequelize": "^6.37.5",
     "sqlite3": "^5.1.7"
