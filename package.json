@@ -21,8 +21,8 @@
   },
   "dependencies": {
     "@alephium/web3": "^2.0.8",
-    "express": "^4.21.2",
-    "sequelize": "^6.37.5",
+    "express": "^5.2.1",
+    "sequelize": "^6.37.7",
     "sqlite3": "^5.1.7"
   }
 }
