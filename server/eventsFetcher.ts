@@ -39,6 +39,11 @@ function normalizeAddress(address: string): string {
   return address;
 }
 
+/** Runtime EventSubscription exposes this; generated contract typings only list Subscription. */
+function resumeEventIndex(sub: Subscription<any>): number {
+  return (sub as Subscription<any> & { currentEventCount(): number }).currentEventCount();
+}
+
 export async function eventsFetcher() {
   let eventQueue: any[] = [];
   let batchId = 0;
@@ -176,74 +181,127 @@ export async function eventsFetcher() {
 
   let subscriptionV1: Subscription<any> | null = null;
   let subscriptionV2: Subscription<any> | null = null;
+  let lastV1EventCount = startCounter;
+  let lastV2EventCount = startCounter;
 
-  function startListener(fromCounter: number) {
-    // Start listening to V1 events
-    subscriptionV1 = factoryContract.subscribeAllEvents({
-      pollingInterval: 5000,
-      messageCallback: async (event) => {
-        eventQueue.push(event);
-        if(event.name === "PoapMinted") {
-          const testevent = event as PoapFactoryTypes.PoapMintedEvent;
-          console.log(`PoapMinted V1: ${testevent.fields.contractId} ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.caller}`);
-        }
-        if (eventQueue.length >= BATCH_SIZE) {
-          await processBatch([...eventQueue], batchId++);
-          eventQueue = [];
-        }
-      },
-      errorCallback: async (error, subscription) => {
-        console.error(`Error from contract factory V1:`, error);
-        subscription.unsubscribe();
-        console.log('Restarting V1 listener in 10 seconds...');
-        setTimeout(() => {
-          startListener(startCounter);
-        }, 10000);
-      }
-    }, fromCounter);
-
-    // Start listening to V2 events
-    subscriptionV2 = factoryContractV2.subscribeAllEvents({
-      pollingInterval: 5000,
-      messageCallback: async (event) => {
-        eventQueue.push(event);
-        if(event.name === "PoapMinted") {
-          const testevent = event as PoapFactoryV2Types.PoapMintedEvent;
-          console.log(`PoapMinted V2: ${testevent.fields.contractId} ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.caller}`);
-        }
-
-        if (event.name === "SerieAdded") {
-          const testevent = event as PoapFactoryV2Types.SerieAddedEvent;
-          console.log(`Series added V2: ${testevent.fields.collectionId} ${testevent.fields.eventContractId} ${testevent.fields.eventId} ${testevent.fields.eventName} ${testevent.fields.organizer} ${testevent.fields.isPublic}`);
-        }
-
-        if (event.name === "PoapSerieMinted") {
-          const testevent = event as PoapFactoryV2Types.PoapSerieMintedEvent;
-          console.log(`PoapSerieMinted V2: ${testevent.fields.contractId} ${testevent.fields.caller} ${testevent.fields.eventId} ${testevent.fields.nftIndex} ${testevent.fields.timestamp}`);
-        }
-
-        if (event.name === "PoapParticipatedIn") {
-          const testevent = event as PoapFactoryV2Types.PoapParticipatedInEvent;
-          console.log(`PoapParticipatedIn V2: ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.organizerAddress}`);
-        }
-
-        if (eventQueue.length >= BATCH_SIZE) {
-          await processBatch([...eventQueue], batchId++);
-          eventQueue = [];
-        }
-      },
-      errorCallback: async (error, subscription) => {
-        console.error(`Error from contract factory V2:`, error);
-        subscription.unsubscribe();
-        console.log('Restarting V2 listener in 10 seconds...');
-        setTimeout(() => {
-          startListener(startCounter);
-        }, 10000);
-      }
-    }, fromCounter);
+  function persistEventProgress() {
+    const minCount = Math.min(lastV1EventCount, lastV2EventCount);
+    EventStat.upsert({ id: 1, processedCounter: minCount }).catch((err) =>
+      console.error('EventStat upsert failed:', err)
+    );
   }
 
-  startListener(startCounter);
+  /** Backoff when the node is flaky (e.g. ETIMEDOUT); caps at 60s. Resets on successful progress. */
+  let v1RestartAttempt = 0;
+  let v2RestartAttempt = 0;
+  function restartDelayMs(attempt: number) {
+    return Math.min(60_000, 10_000 * Math.pow(2, Math.min(attempt, 3)));
+  }
+
+  function startV1Listener(fromCounter: number) {
+    subscriptionV1?.unsubscribe();
+    subscriptionV1 = factoryContract.subscribeAllEvents(
+      {
+        pollingInterval: 5000,
+        onEventCountChanged: async (count) => {
+          lastV1EventCount = count;
+          v1RestartAttempt = 0;
+          persistEventProgress();
+        },
+        messageCallback: async (event) => {
+          eventQueue.push(event);
+          if (event.name === 'PoapMinted') {
+            const testevent = event as PoapFactoryTypes.PoapMintedEvent;
+            console.log(
+              `PoapMinted V1: ${testevent.fields.contractId} ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.caller}`
+            );
+          }
+          if (eventQueue.length >= BATCH_SIZE) {
+            await processBatch([...eventQueue], batchId++);
+            eventQueue = [];
+          }
+        },
+        errorCallback: async (error, subscription) => {
+          console.error(`Error from contract factory V1:`, error);
+          const resumeFrom = resumeEventIndex(subscription);
+          try {
+            subscription.unsubscribe();
+          } catch (e) {
+            console.error('V1 unsubscribe error:', e);
+          }
+          const delay = restartDelayMs(v1RestartAttempt++);
+          console.log(`Restarting V1 listener from event index ${resumeFrom} in ${delay}ms...`);
+          setTimeout(() => startV1Listener(resumeFrom), delay);
+        },
+      },
+      fromCounter
+    );
+  }
+
+  function startV2Listener(fromCounter: number) {
+    subscriptionV2?.unsubscribe();
+    subscriptionV2 = factoryContractV2.subscribeAllEvents(
+      {
+        pollingInterval: 5000,
+        onEventCountChanged: async (count) => {
+          lastV2EventCount = count;
+          v2RestartAttempt = 0;
+          persistEventProgress();
+        },
+        messageCallback: async (event) => {
+          eventQueue.push(event);
+          if (event.name === 'PoapMinted') {
+            const testevent = event as PoapFactoryV2Types.PoapMintedEvent;
+            console.log(
+              `PoapMinted V2: ${testevent.fields.contractId} ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.caller}`
+            );
+          }
+
+          if (event.name === 'SerieAdded') {
+            const testevent = event as PoapFactoryV2Types.SerieAddedEvent;
+            console.log(
+              `Series added V2: ${testevent.fields.collectionId} ${testevent.fields.eventContractId} ${testevent.fields.eventId} ${testevent.fields.eventName} ${testevent.fields.organizer} ${testevent.fields.isPublic}`
+            );
+          }
+
+          if (event.name === 'PoapSerieMinted') {
+            const testevent = event as PoapFactoryV2Types.PoapSerieMintedEvent;
+            console.log(
+              `PoapSerieMinted V2: ${testevent.fields.contractId} ${testevent.fields.caller} ${testevent.fields.eventId} ${testevent.fields.nftIndex} ${testevent.fields.timestamp}`
+            );
+          }
+
+          if (event.name === 'PoapParticipatedIn') {
+            const testevent = event as PoapFactoryV2Types.PoapParticipatedInEvent;
+            console.log(
+              `PoapParticipatedIn V2: ${testevent.fields.collectionId} ${testevent.fields.nftIndex} ${testevent.fields.organizerAddress}`
+            );
+          }
+
+          if (eventQueue.length >= BATCH_SIZE) {
+            await processBatch([...eventQueue], batchId++);
+            eventQueue = [];
+          }
+        },
+        errorCallback: async (error, subscription) => {
+          console.error(`Error from contract factory V2:`, error);
+          const resumeFrom = resumeEventIndex(subscription);
+          try {
+            subscription.unsubscribe();
+          } catch (e) {
+            console.error('V2 unsubscribe error:', e);
+          }
+          const delay = restartDelayMs(v2RestartAttempt++);
+          console.log(`Restarting V2 listener from event index ${resumeFrom} in ${delay}ms...`);
+          setTimeout(() => startV2Listener(resumeFrom), delay);
+        },
+      },
+      fromCounter
+    );
+  }
+
+  startV1Listener(startCounter);
+  startV2Listener(startCounter);
 
   
   await EventStat.upsert(
